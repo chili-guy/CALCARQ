@@ -1,4 +1,3 @@
-import React from "react";
 import { Factor } from "./PricingEngine";
 
 interface FactorCardProps {

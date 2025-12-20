@@ -1,4 +1,3 @@
-import React from "react";
 import { CheckCircle2, TrendingUp, DollarSign, Clock } from "lucide-react";
 import { motion } from "framer-motion";
 

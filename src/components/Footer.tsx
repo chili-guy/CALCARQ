@@ -1,6 +1,5 @@
-import React from "react";
 import { Link } from "react-router-dom";
-import { LayoutDashboard, Calculator, Mail } from "lucide-react";
+import { LayoutDashboard, Mail } from "lucide-react";
 import { createPageUrl } from "@/utils";
 
 export default function Footer() {
