@@ -1,83 +1,83 @@
 import { Link } from "react-router-dom";
-import { LayoutDashboard, Mail } from "lucide-react";
+import { Mail, Home, Calculator, BookOpen } from "lucide-react";
 import { createPageUrl } from "@/utils";
 
 export default function Footer() {
   return (
-    <footer className="bg-slate-900 text-slate-300 border-t border-slate-800">
+    <footer className="bg-calcularq-blue text-white border-t border-[#002366]">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 lg:gap-12">
-          {/* Brand Section */}
+          {/* Left Section - Logo, Navigation, Email */}
           <div className="space-y-4">
             <Link 
               to={createPageUrl("Home")}
               className="flex items-center gap-2.5"
             >
-              <div className="w-9 h-9 rounded-xl bg-white/10 flex items-center justify-center">
-                <LayoutDashboard className="w-5 h-5 text-white" />
-              </div>
-              <span className="font-semibold text-white text-lg">
-                Calcularq
-              </span>
+              <img 
+                src="/logo-calcularq.png" 
+                alt="Calcularq" 
+                className="h-10 w-auto object-contain logo-white"
+              />
             </Link>
-            <p className="text-sm text-slate-400 leading-relaxed">
-              Calculadora inteligente de precificação para projetos de arquitetura. 
-              Determine o valor justo do seu trabalho com base em fatores de complexidade 
-              configuráveis e parâmetros personalizáveis.
-            </p>
-            <div className="flex items-center gap-2 text-xs text-slate-500">
+            
+            {/* Navigation */}
+            <nav className="space-y-2">
+              <Link 
+                to={createPageUrl("Home")}
+                className="flex items-center gap-2 text-sm text-white/80 hover:text-white transition-colors"
+              >
+                <Home className="w-4 h-4" />
+                Home
+              </Link>
+              <Link 
+                to={createPageUrl("Calculator")}
+                className="flex items-center gap-2 text-sm text-white/80 hover:text-white transition-colors"
+              >
+                <Calculator className="w-4 h-4" />
+                Calculadora
+              </Link>
+              <Link 
+                to={createPageUrl("Manual")}
+                className="flex items-center gap-2 text-sm text-white/80 hover:text-white transition-colors"
+              >
+                <BookOpen className="w-4 h-4" />
+                Manual
+              </Link>
+            </nav>
+            
+            {/* Email */}
+            <div className="flex items-center gap-2 text-sm text-white/80">
               <Mail className="w-4 h-4" />
-              <span>contato@calcularq.com.br</span>
+              <a 
+                href="mailto:atendimento.calcularq@gmail.com"
+                className="hover:text-white transition-colors"
+              >
+                atendimento.calcularq@gmail.com
+              </a>
             </div>
           </div>
 
-          {/* Navigation Section */}
-          <div className="space-y-4">
-            <h3 className="text-white font-semibold text-sm uppercase tracking-wider">
-              Navegação
-            </h3>
-            <ul className="space-y-3">
-              <li>
-                <Link 
-                  to={createPageUrl("Home")}
-                  className="text-sm text-slate-400 hover:text-white transition-colors flex items-center gap-2"
-                >
-                  <span className="w-1.5 h-1.5 rounded-full bg-slate-500"></span>
-                  Home
-                </Link>
-              </li>
-              <li>
-                <Link 
-                  to={createPageUrl("Calculator")}
-                  className="text-sm text-slate-400 hover:text-white transition-colors flex items-center gap-2"
-                >
-                  <span className="w-1.5 h-1.5 rounded-full bg-slate-500"></span>
-                  Calculadora
-                </Link>
-              </li>
-            </ul>
-          </div>
+          {/* Middle Section - Empty (removed as per specs) */}
+          <div></div>
 
-          {/* About Section */}
+          {/* Right Section - About */}
           <div className="space-y-4">
             <h3 className="text-white font-semibold text-sm uppercase tracking-wider">
               Sobre
             </h3>
-            <p className="text-sm text-slate-400 leading-relaxed">
-              O Calcularq é uma ferramenta profissional desenvolvida para arquitetos 
-              e profissionais da área calcular com precisão o valor de seus projetos, 
-              considerando múltiplos fatores de complexidade e personalização.
+            <p className="text-sm text-white/80 leading-relaxed">
+              A CalculArq é uma ferramenta precisa que precifica projetos de arquitetura e interiores com cálculos automáticos baseados em horas técnicas e fatores de complexidade.
             </p>
           </div>
         </div>
 
         {/* Bottom Bar */}
-        <div className="mt-12 pt-8 border-t border-slate-800">
+        <div className="mt-12 pt-8 border-t border-white/10">
           <div className="flex flex-col md:flex-row justify-between items-center gap-4">
-            <div className="text-sm text-slate-500">
+            <div className="text-sm text-white/60">
               <p>© {new Date().getFullYear()} <span className="text-white font-semibold">calcularq.com.br</span>. Todos os direitos reservados.</p>
             </div>
-            <div className="text-xs text-slate-600">
+            <div className="text-xs text-white/50">
               <p>Desenvolvido com precisão para profissionais de arquitetura</p>
             </div>
           </div>
@@ -86,5 +86,3 @@ export default function Footer() {
     </footer>
   );
 }
-
-

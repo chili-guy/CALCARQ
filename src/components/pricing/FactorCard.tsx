@@ -12,7 +12,7 @@ export default function FactorCard({ factor, value, onChange }: FactorCardProps)
       <div className="mb-4">
         <div className="flex items-center justify-between mb-2">
           <h3 className="font-semibold text-slate-900">{factor.name}</h3>
-          <span className="text-xs text-slate-500 bg-slate-100 px-2 py-1 rounded">
+          <span className="text-xs text-calcularq-blue bg-calcularq-blue/10 px-2 py-1 rounded">
             Peso: {factor.weight}
           </span>
         </div>
@@ -27,8 +27,8 @@ export default function FactorCard({ factor, value, onChange }: FactorCardProps)
               flex items-start gap-3 p-3 rounded-lg border-2 cursor-pointer transition-all
               ${
                 value === option.value
-                  ? "border-slate-900 bg-slate-50"
-                  : "border-slate-200 hover:border-slate-300"
+                  ? "border-calcularq-blue bg-calcularq-blue/10"
+                  : "border-slate-200 hover:border-calcularq-blue/50"
               }
             `}
           >
@@ -38,7 +38,7 @@ export default function FactorCard({ factor, value, onChange }: FactorCardProps)
               value={option.value}
               checked={value === option.value}
               onChange={() => onChange(factor.id, option.value)}
-              className="mt-0.5 w-4 h-4 text-slate-900 focus:ring-slate-900"
+              className="mt-0.5 w-4 h-4 text-calcularq-blue focus:ring-calcularq-blue"
             />
             <div className="flex-1">
               <div className="font-medium text-slate-900 text-sm">

@@ -1,115 +1,145 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
+import { useAuth } from "@/contexts/AuthContext";
 import { 
   Calculator, 
-  Layers, 
-  Settings2, 
-  TrendingUp, 
+  Globe,
+  DollarSign,
+  Zap,
   ArrowRight,
   CheckCircle2,
-  Sparkles
+  Star
 } from "lucide-react";
 import { createPageUrl } from "@/utils";
-import PlansSection from "@/components/PlansSection";
-import ReviewsCarousel from "@/components/ReviewsCarousel";
 
 export default function Home() {
+  const { user } = useAuth();
+  const navigate = useNavigate();
+
+  const handleCalculatorClick = (e: React.MouseEvent) => {
+    if (!user) {
+      e.preventDefault();
+      navigate(createPageUrl("Login"));
+    } else if (!user.hasPaid) {
+      e.preventDefault();
+      navigate(createPageUrl("Payment"));
+    }
+  };
+
   const features = [
     {
-      icon: Layers,
-      title: "Fatores Configuráveis",
-      description: "6 fatores de complexidade com pesos personalizáveis"
-    },
-    {
       icon: Calculator,
-      title: "Cálculo Preciso",
-      description: "Média ponderada para índice de complexidade global"
+      title: "Cálculo da Complexidade",
+      description: "Garante uma precificação justa ao considerar fatores de complexidade do projeto."
     },
     {
-      icon: TrendingUp,
-      title: "Tempo Real",
-      description: "Resultados atualizados instantaneamente"
+      icon: Globe,
+      title: "Acesso em Qualquer Lugar",
+      description: "Uma ferramenta prática e 100% online, pronta para usar em qualquer dispositivo."
     },
     {
-      icon: Settings2,
-      title: "Personalização Total",
-      description: "Ajuste pesos e parâmetros conforme sua necessidade"
+      icon: DollarSign,
+      title: "Investimento Mínimo",
+      description: "Solução de baixo custo para facilitar a precificação dos seus projetos de arquitetura."
+    },
+    {
+      icon: Zap,
+      title: "Agilidade na Entrega",
+      description: "Reduza o tempo de elaboração de propostas e envie orçamentos precisos com rapidez."
     }
   ];
 
   const factorsList = [
-    "Área Construída",
+    "Área de Projeto",
     "Etapa do Projeto", 
     "Nível de Detalhamento",
     "Exigência Técnica",
     "Exigência Burocrática",
-    "Acompanhamento"
+    "Dedicação à Obra"
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-50">
-      {/* Background Pattern */}
-      <div className="fixed inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGRlZnM+PHBhdHRlcm4gaWQ9ImdyaWQiIHdpZHRoPSI2MCIgaGVpZ2h0PSI2MCIgcGF0dGVyblVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+PHBhdGggZD0iTSA2MCAwIEwgMCAwIDAgNjAiIGZpbGw9Im5vbmUiIHN0cm9rZT0icmdiYSgxNDgsIDE2MywgMTg0LCAwLjA1KSIgc3Ryb2tlLXdpZHRoPSIxIi8+PC9wYXR0ZXJuPjwvZGVmcz48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSJ1cmwoI2dyaWQpIi8+PC9zdmc+')] opacity-40 pointer-events-none" />
-
+    <div className="min-h-screen bg-white">
       <div className="relative">
-        {/* Hero Section */}
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 pb-16">
-          {/* Background Image with Opacity */}
-          <div 
-            className="absolute inset-0 rounded-3xl overflow-hidden opacity-25 pointer-events-none"
-            style={{
-              backgroundImage: "url('https://images.unsplash.com/photo-1487958449943-2429e8be8625?ixlib=rb-4.0.3&auto=format&fit=crop&w=2070&q=80')",
-              backgroundSize: 'cover',
-              backgroundPosition: 'center',
-              backgroundRepeat: 'no-repeat'
-            }}
-          />
-          <div className="absolute inset-0 bg-gradient-to-br from-white/60 via-white/40 to-white/60 rounded-3xl pointer-events-none" />
-          
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="relative text-center max-w-3xl mx-auto z-10"
-          >
-            <Badge 
-              variant="outline" 
-              className="bg-emerald-50 text-emerald-700 border-emerald-200 px-4 py-1.5 mb-6"
-            >
-              <Sparkles className="w-3.5 h-3.5 mr-2" />
-              Ferramenta Profissional
-            </Badge>
+        {/* Hero Section - Novo Banner */}
+        <div className="relative bg-calcularq-blue overflow-hidden">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 lg:py-20">
+            <div className="grid lg:grid-cols-2 gap-8 lg:gap-12 items-center">
+              {/* Left Side - Mockup (placeholder) */}
+              <div className="hidden lg:block">
+                <div className="bg-white/10 rounded-2xl p-8 backdrop-blur-sm border border-white/20">
+                  <div className="text-white/60 text-center py-16">
+                    <Calculator className="w-24 h-24 mx-auto mb-4 opacity-50" />
+                    <p className="text-sm">Interface da Calculadora</p>
+                    <p className="text-xs mt-2">Arte será adicionada posteriormente</p>
+                  </div>
+                </div>
+              </div>
 
-            <h1 className="text-4xl md:text-6xl font-bold text-slate-900 tracking-tight mb-6 leading-tight">
-              Precifique seus projetos de arquitetura com{" "}
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-slate-900 via-slate-700 to-slate-900">
-                precisão
-              </span>
-            </h1>
+              {/* Right Side - Content */}
+              <div className="relative z-10">
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="bg-white rounded-2xl p-6 md:p-8 lg:p-10 shadow-2xl"
+                >
+                  {/* Logo */}
+                  <div className="mb-6 flex items-center gap-3">
+                    <img 
+                      src="/logo-calcularq.png" 
+                      alt="Calcularq" 
+                      className="h-12 w-auto object-contain"
+                    />
+                  </div>
 
-            <p className="text-xl text-slate-500 mb-10 leading-relaxed">
-              Calculadora inteligente baseada em fatores de complexidade. 
-              Determine o valor justo do seu trabalho em segundos.
-            </p>
+                  <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-calcularq-blue mb-6 leading-tight">
+                    SUA CALCULADORA DE PRECIFICAÇÃO POR COMPLEXIDADE
+                  </h1>
 
-            <Link to={createPageUrl("Calculator")}>
-              <Button 
-                size="lg" 
-                className="bg-slate-900 hover:bg-slate-800 text-white px-8 py-6 text-lg rounded-xl shadow-lg hover:shadow-xl transition-all"
-              >
-                Começar a Calcular
-                <ArrowRight className="w-5 h-5 ml-2" />
-              </Button>
-            </Link>
-          </motion.div>
+                  <p className="text-lg text-slate-700 mb-8 leading-relaxed">
+                    Precifique seus projetos de arquitetura. A Calcularq é uma ferramenta precisa para alinhar seus orçamentos à dedicação que cada projeto exige.
+                  </p>
+
+                  {/* Rating Widget */}
+                  <div className="flex items-center gap-2 mb-6">
+                    <div className="flex gap-1">
+                      {[...Array(5)].map((_, i) => (
+                        <Star key={i} className={`w-5 h-5 ${i < 4 ? 'fill-amber-400 text-amber-400' : 'fill-white text-amber-400'}`} />
+                      ))}
+                    </div>
+                    <span className="text-sm font-semibold text-slate-700">4,7/5 (39)</span>
+                  </div>
+
+                  {/* CTA Button */}
+                  <Link 
+                    to={user ? createPageUrl("Calculator") : createPageUrl("Login")} 
+                    onClick={handleCalculatorClick}
+                    className="block mb-3"
+                  >
+                    <Button 
+                      size="lg" 
+                      className="w-full bg-calcularq-orange hover:bg-orange-600 text-white px-8 py-6 text-lg rounded-xl shadow-lg hover:shadow-xl transition-all font-semibold"
+                    >
+                      Acesse agora por apenas R$19,90
+                    </Button>
+                  </Link>
+
+                  <p className="text-center text-sm text-slate-600">
+                    Pagamento único. Sem mensalidades.
+                  </p>
+                </motion.div>
+              </div>
+            </div>
+          </div>
         </div>
 
         {/* Features Grid */}
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-16">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 lg:py-20">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
             transition={{ delay: 0.2 }}
             className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6"
           >
@@ -117,17 +147,18 @@ export default function Home() {
               <motion.div
                 key={feature.title}
                 initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
                 transition={{ delay: 0.2 + index * 0.1 }}
-                className="bg-white rounded-2xl border border-slate-200/60 p-6 hover:border-slate-300 hover:shadow-lg transition-all duration-300"
+                className="bg-white rounded-2xl border border-slate-200 p-6 hover:border-calcularq-blue hover:shadow-lg transition-all duration-300"
               >
-                <div className="w-12 h-12 rounded-xl bg-slate-100 flex items-center justify-center mb-4">
-                  <feature.icon className="w-6 h-6 text-slate-700" />
+                <div className="w-12 h-12 rounded-xl bg-calcularq-blue/10 flex items-center justify-center mb-4">
+                  <feature.icon className="w-6 h-6 text-calcularq-blue" />
                 </div>
-                <h3 className="text-lg font-semibold text-slate-900 mb-2">
+                <h3 className="text-lg font-semibold text-calcularq-blue mb-2">
                   {feature.title}
                 </h3>
-                <p className="text-slate-500 text-sm">
+                <p className="text-slate-600 text-sm leading-relaxed">
                   {feature.description}
                 </p>
               </motion.div>
@@ -139,22 +170,23 @@ export default function Home() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-20">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
             transition={{ delay: 0.4 }}
-            className="bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 rounded-3xl p-8 md:p-12"
+            className="bg-gradient-to-br from-calcularq-blue via-[#002366] to-calcularq-blue rounded-3xl p-8 md:p-12"
           >
             <div className="grid md:grid-cols-2 gap-8 items-center">
               <div>
                 <h2 className="text-2xl md:text-3xl font-bold text-white mb-4">
                   Fatores de Complexidade
                 </h2>
-                <p className="text-slate-400 mb-6">
+                <p className="text-slate-300 mb-6">
                   Nossa calculadora considera 6 fatores essenciais para 
                   determinar a complexidade real do seu projeto.
                 </p>
                 <Link to={createPageUrl("Calculator")}>
                   <Button 
-                    className="bg-white text-slate-900 border-2 border-white hover:bg-slate-50 hover:border-slate-200 shadow-lg font-semibold px-6 py-3"
+                    className="bg-white text-calcularq-blue border-2 border-white hover:bg-slate-50 hover:border-slate-200 shadow-lg font-semibold px-6 py-3"
                   >
                     Experimentar Agora
                     <ArrowRight className="w-4 h-4 ml-2" />
@@ -167,9 +199,10 @@ export default function Home() {
                   <motion.div
                     key={factor}
                     initial={{ opacity: 0, x: 20 }}
-                    animate={{ opacity: 1, x: 0 }}
+                    whileInView={{ opacity: 1, x: 0 }}
+                    viewport={{ once: true }}
                     transition={{ delay: 0.5 + index * 0.1 }}
-                    className="flex items-center gap-2 bg-white/5 rounded-lg px-4 py-3"
+                    className="flex items-center gap-2 bg-white/10 rounded-lg px-4 py-3"
                   >
                     <CheckCircle2 className="w-4 h-4 text-emerald-400 flex-shrink-0" />
                     <span className="text-white text-sm">{factor}</span>
@@ -180,60 +213,53 @@ export default function Home() {
           </motion.div>
         </div>
 
-        {/* Plans Section */}
-        <PlansSection />
-
-        {/* Formula Section */}
+        {/* How It Works Section */}
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-20">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
             transition={{ delay: 0.6 }}
             className="text-center"
           >
-            <h2 className="text-2xl font-bold text-slate-900 mb-8">
+            <h2 className="text-3xl md:text-4xl font-bold text-calcularq-blue mb-12">
               Como Funciona
             </h2>
 
-            <div className="flex flex-col md:flex-row items-center justify-center gap-4 md:gap-8">
+            <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
               <FormulaStep 
                 number="1" 
-                title="Complexidade Global"
-                formula="Σ(nível × peso) / Σ(pesos)"
+                title="Insira seus dados"
+                description="Cadastre suas despesas e sua disponibilidade de horas no mês. O sistema define automaticamente o valor mínimo da sua hora técnica."
               />
-              <ArrowRight className="w-6 h-6 text-slate-300 hidden md:block" />
               <FormulaStep 
                 number="2" 
-                title="Valor-hora Técnica"
-                formula="Hora Mínima × Complexidade"
+                title="Configure o Projeto"
+                description="Avalie o nível de dificuldade do projeto ajustando os 6 fatores de complexidade da Calcularq."
               />
-              <ArrowRight className="w-6 h-6 text-slate-300 hidden md:block" />
               <FormulaStep 
                 number="3" 
-                title="Valor Final"
-                formula="Hora Técnica × Horas Estimadas"
+                title="Obtenha o Preço"
+                description="Visualize instantaneamente o preço ideal do projeto, considerando sua complexidade."
               />
             </div>
           </motion.div>
         </div>
-
-        {/* Reviews Carousel */}
-        <ReviewsCarousel />
       </div>
     </div>
   );
 }
 
-function FormulaStep({ number, title, formula }: { number: string; title: string; formula: string }) {
+function FormulaStep({ number, title, description }: { number: string; title: string; description: string }) {
   return (
-    <div className="bg-white rounded-2xl border border-slate-200/60 p-6 w-full md:w-auto">
-      <div className="w-8 h-8 rounded-full bg-slate-900 text-white text-sm font-bold flex items-center justify-center mx-auto mb-3">
+    <div className="bg-white rounded-2xl border border-slate-200 p-6 hover:border-calcularq-blue hover:shadow-lg transition-all duration-300">
+      <div className="w-12 h-12 rounded-full bg-calcularq-blue text-white text-lg font-bold flex items-center justify-center mx-auto mb-4">
         {number}
       </div>
-      <h3 className="font-semibold text-slate-900 mb-2">{title}</h3>
-      <code className="text-sm text-slate-500 bg-slate-50 px-3 py-1 rounded-lg">
-        {formula}
-      </code>
+      <h3 className="font-semibold text-calcularq-blue mb-3 text-lg">{title}</h3>
+      <p className="text-slate-600 text-sm leading-relaxed">
+        {description}
+      </p>
     </div>
   );
 }
