@@ -1,7 +1,6 @@
 import { Calculator, DollarSign, Clock, TrendingUp } from "lucide-react";
 import ExpenseCard, { Expense } from "./ExpenseCard";
 import SaveBudgetButton from "./SaveBudgetButton";
-import { useState } from "react";
 
 interface FinalCalculationProps {
   minHourlyRate: number;
@@ -45,8 +44,6 @@ export default function FinalCalculation({
       variableExpenses.map((exp) => (exp.id === id ? { ...exp, ...updates } : exp))
     );
   };
-
-  const totalVariableExpenses = variableExpenses.reduce((sum, exp) => sum + exp.value, 0);
 
   return (
     <div className="bg-white rounded-2xl border border-slate-200 p-6 lg:p-8 shadow-sm">

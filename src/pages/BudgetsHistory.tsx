@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { useAuth } from "@/contexts/AuthContext";
 import { db, Budget } from "@/lib/database";
-import { History, Trash2, Eye, Plus, Calendar, DollarSign } from "lucide-react";
+import { History, Trash2, Eye, Plus, Calendar } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { createPageUrl } from "@/utils";
 

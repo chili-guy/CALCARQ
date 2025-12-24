@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Info, Edit2, Check, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { AreaInterval, DEFAULT_AREA_INTERVALS, calculateAreaLevel } from "../pricing/PricingEngine";
+import { AreaInterval, calculateAreaLevel } from "../pricing/PricingEngine";
 
 interface AreaFactorCardProps {
   area: number | null;

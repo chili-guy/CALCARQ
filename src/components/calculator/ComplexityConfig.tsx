@@ -1,6 +1,6 @@
 import { Settings2, RotateCcw, Info } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Factor, DEFAULT_FACTORS } from "../pricing/PricingEngine";
+import { Factor } from "../pricing/PricingEngine";
 
 interface ComplexityConfigProps {
   factors: Factor[];

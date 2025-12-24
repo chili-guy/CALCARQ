@@ -18,7 +18,7 @@ export default function Payment() {
   const [status, setStatus] = useState<"pending" | "success" | "error">("pending");
   const [isProcessing, setIsProcessing] = useState(false);
   const [pollAttempts, setPollAttempts] = useState(0);
-  const pollIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const pollIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const checkoutWindowRef = useRef<Window | null>(null);
 
   // Verificar se já pagou

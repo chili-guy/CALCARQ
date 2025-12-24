@@ -5,7 +5,6 @@ import { Calculator, Home, FileText, Shield, BookOpen, LogIn, LogOut, User, Hist
 import Footer from "./Footer";
 import LegalModal from "./LegalModal";
 import { useAuth } from "@/contexts/AuthContext";
-import { Button } from "@/components/ui/button";
 
 interface LayoutProps {
   children: React.ReactNode;
