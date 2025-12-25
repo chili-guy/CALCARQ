@@ -131,66 +131,65 @@ export default function Payment() {
 
     try {
       // Sincronizar usuário com backend antes do pagamento
-      await api.syncUser(user.id, user.email, user.name);
+      try {
+        await api.syncUser(user.id, user.email, user.name);
+      } catch (syncError) {
+        console.warn("Erro ao sincronizar usuário (continuando):", syncError);
+        // Continuar mesmo se a sincronização falhar
+      }
 
       // Tentar criar sessão via API (garante client_reference_id)
+      let checkoutUrl: string | null = null;
+      
       try {
         const { url } = await api.createCheckoutSession(user.id, user.email, user.name);
-        
-        // Abrir checkout do Stripe
-        checkoutWindowRef.current = window.open(
-          url,
-          "_blank",
-          "width=600,height=700"
-        );
-
-        if (!checkoutWindowRef.current) {
-          alert("Por favor, permita pop-ups para este site para realizar o pagamento.");
-          setIsProcessing(false);
-          return;
-        }
-
-        setPollAttempts(0);
-
-        // Iniciar polling para verificar status de pagamento
-        // O webhook do Stripe deve atualizar o status no backend
-        pollIntervalRef.current = setInterval(() => {
-          checkPaymentStatus();
-        }, POLL_INTERVAL);
-
-        // Verificar imediatamente
-        checkPaymentStatus();
+        checkoutUrl = url;
+        console.log("✅ Sessão criada via API:", url);
       } catch (apiError: any) {
         // Se a API falhar (ex: STRIPE_PRICE_ID não configurado), usar fallback
-        console.warn("Erro ao criar sessão via API, usando link direto:", apiError);
+        console.warn("⚠️ Erro ao criar sessão via API, usando link direto:", apiError?.message || apiError);
         
         // Fallback: usar link direto
-        const checkoutUrl = `${STRIPE_CHECKOUT_URL_FALLBACK}?client_reference_id=${encodeURIComponent(user.id)}`;
-        
-        checkoutWindowRef.current = window.open(
-          checkoutUrl,
-          "_blank",
-          "width=600,height=700"
-        );
-
-        if (!checkoutWindowRef.current) {
-          alert("Por favor, permita pop-ups para este site para realizar o pagamento.");
-          setIsProcessing(false);
-          return;
-        }
-
-        setPollAttempts(0);
-
-        pollIntervalRef.current = setInterval(() => {
-          checkPaymentStatus();
-        }, POLL_INTERVAL);
-
-        checkPaymentStatus();
+        checkoutUrl = `${STRIPE_CHECKOUT_URL_FALLBACK}?client_reference_id=${encodeURIComponent(user.id)}`;
+        console.log("🔄 Usando fallback:", checkoutUrl);
       }
-    } catch (error) {
-      console.error("Erro ao iniciar checkout:", error);
+
+      if (!checkoutUrl) {
+        throw new Error("Não foi possível obter URL de checkout");
+      }
+      
+      // Abrir checkout do Stripe
+      checkoutWindowRef.current = window.open(
+        checkoutUrl,
+        "_blank",
+        "width=600,height=700"
+      );
+
+      if (!checkoutWindowRef.current) {
+        alert("Por favor, permita pop-ups para este site para realizar o pagamento.");
+        setIsProcessing(false);
+        return;
+      }
+
+      setPollAttempts(0);
+
+      // Iniciar polling para verificar status de pagamento
+      // O webhook do Stripe deve atualizar o status no backend
+      pollIntervalRef.current = setInterval(() => {
+        checkPaymentStatus();
+      }, POLL_INTERVAL);
+
+      // Verificar imediatamente
+      checkPaymentStatus();
+    } catch (error: any) {
+      console.error("❌ Erro ao iniciar checkout:", error);
       setStatus("error");
       setIsProcessing(false);
+      
+      // Mostrar erro mais específico no console para debug
+      if (error?.message) {
+        console.error("Detalhes do erro:", error.message);
+      }
     }
 
     // Monitorar quando a janela fechar
@@ -290,15 +289,30 @@ export default function Payment() {
           <h2 className="text-2xl font-bold text-red-600 mb-2">
             Erro no Pagamento
           </h2>
-          <p className="text-slate-600 mb-6">
+          <p className="text-slate-600 mb-4">
             Ocorreu um erro ao processar seu pagamento. Tente novamente.
           </p>
-          <Button
-            onClick={handleStripeCheckout}
-            className="bg-calcularq-blue hover:bg-[#002366] text-white"
-          >
-            Tentar Novamente
-          </Button>
+          <p className="text-sm text-slate-500 mb-6">
+            Se o problema persistir, verifique se os pop-ups estão bloqueados ou entre em contato com o suporte.
+          </p>
+          <div className="flex gap-3 justify-center">
+            <Button
+              onClick={() => {
+                setStatus("pending");
+                setIsProcessing(false);
+                handleStripeCheckout();
+              }}
+              className="bg-calcularq-blue hover:bg-[#002366] text-white"
+            >
+              Tentar Novamente
+            </Button>
+            <Button
+              onClick={() => navigate(createPageUrl("Home"))}
+              className="border border-slate-300 bg-white text-slate-700 hover:bg-slate-50"
+            >
+              Voltar
+            </Button>
+          </div>
         </motion.div>
       </div>
     );
