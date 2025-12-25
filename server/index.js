@@ -314,7 +314,7 @@ app.post('/api/webhook/stripe', express.raw({ type: 'application/json' }), async
   // Processar diferentes tipos de eventos
   try {
     switch (event.type) {
-      case 'checkout.session.completed':
+      case 'checkout.session.completed': {
         const session = event.data.object;
         const userId = session.client_reference_id;
         
@@ -365,8 +365,9 @@ app.post('/api/webhook/stripe', express.raw({ type: 'application/json' }), async
           });
         }
         break;
+      }
 
-      case 'payment_intent.succeeded':
+      case 'payment_intent.succeeded': {
         const paymentIntent = event.data.object;
         
         logPaymentEvent('PAYMENT_INTENT_SUCCEEDED', {
@@ -476,19 +477,23 @@ app.post('/api/webhook/stripe', express.raw({ type: 'application/json' }), async
           });
         }
         break;
+      }
 
-      case 'payment_intent.payment_failed':
+      case 'payment_intent.payment_failed': {
         const failedPayment = event.data.object;
         logPaymentEvent('PAYMENT_INTENT_FAILED', {
           paymentIntentId: failedPayment.id,
           error: failedPayment.last_payment_error?.message
         });
         break;
+      }
 
-      default:
+      default: {
         logPaymentEvent('UNKNOWN_WEBHOOK_EVENT', {
           type: event.type
         });
+        break;
+      }
     }
 
     res.json({ received: true });
