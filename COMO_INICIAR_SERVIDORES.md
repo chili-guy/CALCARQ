@@ -228,3 +228,4 @@ Depois que todos os servidores estiverem rodando:
 2. Crie uma conta ou faça login
 3. Teste o pagamento!
 
+

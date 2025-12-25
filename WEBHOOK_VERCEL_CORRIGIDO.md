@@ -116,3 +116,4 @@ Envie:
 2. **Erro exato** que aparece
 3. **Versão do Stripe** (`npm list stripe`)
 
+

@@ -129,3 +129,4 @@ Nos logs da Vercel, você pode:
 
 **Com esses logs detalhados, vamos conseguir identificar exatamente o problema!** 🔍
 
+

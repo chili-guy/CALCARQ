@@ -165,3 +165,4 @@ cd server && npm install
 - **Ctrl+R**: Buscar no histórico
 - **history**: Ver histórico completo
 
+

@@ -98,3 +98,4 @@ Envie-me:
 2. Screenshot do evento no Stripe Dashboard
 3. Qual erro aparece (se houver)
 
+

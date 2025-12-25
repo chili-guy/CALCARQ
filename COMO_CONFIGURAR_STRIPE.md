@@ -168,3 +168,4 @@ Você pode usar outra porta se a 3001 estiver ocupada.
 - Documentação Stripe CLI: https://stripe.com/docs/stripe-cli
 - Cartões de teste: https://stripe.com/docs/testing
 
+
