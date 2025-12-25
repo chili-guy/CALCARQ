@@ -1,5 +1,5 @@
 // Serverless function para webhook do Stripe na Vercel
-// ✅ CORRIGIDO: Lê body como stream (compatível com Vercel)
+// ✅ PRODUCTION-READY: Sempre retorna 200, processa apenas eventos relevantes
 
 import Stripe from 'stripe';
 
@@ -101,67 +101,51 @@ function createOrUpdateUser(userId, userData) {
   }
 }
 
-// ✅ CORRIGIDO: Handler que lê body como stream (compatível Vercel)
+// ✅ PRODUCTION-READY: Handler que sempre retorna 200
 export default async function handler(req, res) {
-  console.log('🔔 WEBHOOK VERCEL - INÍCIO');
-  console.log('Method:', req.method);
-  
+  // ✅ Aceitar qualquer método (Stripe só usa POST, mas não falhar em outros)
   if (req.method !== 'POST') {
-    return res.status(405).json({ error: 'Method not allowed' });
+    return res.status(200).end('ok');
   }
 
   const sig = req.headers['stripe-signature'];
+  if (!sig) {
+    console.warn('⚠️ Missing signature');
+    return res.status(200).json({ received: true, warning: 'Missing signature' });
+  }
+
   const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
+  if (!webhookSecret || webhookSecret === 'whsec_SEU_SECRET_AQUI') {
+    console.warn('⚠️ Webhook secret não configurado');
+    return res.status(200).json({ received: true, warning: 'Webhook secret not configured' });
+  }
 
-  console.log('Has sig:', !!sig);
-  console.log('Has secret:', !!webhookSecret);
-
-  // ✅ CRÍTICO: Ler body como stream (forma correta na Vercel)
+  // ✅ Ler body como stream (forma correta na Vercel)
   let rawBody;
   
   try {
-    // Na Vercel, com bodyParser: false, o body pode vir como:
-    // 1. Stream (precisa ler com for await)
-    // 2. Buffer direto
-    // 3. String
-    
     if (req.body && Buffer.isBuffer(req.body)) {
-      // Já é Buffer
-      console.log('✅ Body é Buffer');
       rawBody = req.body;
     } else if (typeof req.body === 'string') {
-      // É string
-      console.log('✅ Body é string');
       rawBody = Buffer.from(req.body, 'utf8');
-    } else if (req.body && typeof req.body === 'object' && !Buffer.isBuffer(req.body)) {
-      // Foi parseado (não deveria acontecer com bodyParser: false)
-      console.warn('⚠️ Body foi parseado - tentando reconstruir');
-      rawBody = Buffer.from(JSON.stringify(req.body), 'utf8');
     } else {
-      // Tentar ler como stream
-      console.log('📥 Lendo body como stream...');
+      // Ler como stream
       const chunks = [];
-      
-      // ✅ FORMA CORRETA: for await (compatível Vercel)
       for await (const chunk of req) {
         chunks.push(chunk);
       }
-      
       rawBody = Buffer.concat(chunks);
-      console.log('✅ Body lido do stream, tamanho:', rawBody.length);
     }
 
     if (!rawBody || rawBody.length === 0) {
-      console.error('❌ Body vazio');
-      return res.status(400).json({ error: 'Empty body' });
+      console.warn('⚠️ Empty body');
+      return res.status(200).json({ received: true, warning: 'Empty body' });
     }
-
-    console.log('📏 Body length:', rawBody.length);
-
   } catch (error) {
     console.error('❌ Erro ler body:', error.message);
-    console.error('Stack:', error.stack);
-    return res.status(400).json({ 
+    // ✅ SEMPRE retornar 200, mesmo com erro
+    return res.status(200).json({ 
+      received: true, 
       error: 'Error reading body',
       message: error.message 
     });
@@ -171,70 +155,77 @@ export default async function handler(req, res) {
   let event;
 
   try {
-    if (!webhookSecret || webhookSecret === 'whsec_SEU_SECRET_AQUI') {
-      console.warn('⚠️ Sem secret, parseando sem verificação');
-      event = JSON.parse(rawBody.toString('utf8'));
-      console.log('✅ Evento parseado:', event.type);
-    } else {
-      console.log('🔐 Verificando assinatura...');
-      event = stripe.webhooks.constructEvent(rawBody, sig, webhookSecret);
-      console.log('✅ Assinatura OK! Evento:', event.type);
-    }
+    event = stripe.webhooks.constructEvent(rawBody, sig, webhookSecret);
+    console.log('✅ Assinatura OK! Evento:', event.type);
   } catch (err) {
     console.error('❌ Erro verificação:', err.message);
+    // ✅ Retornar 400 apenas para erro de assinatura (Stripe espera isso)
     return res.status(400).send(`Webhook Error: ${err.message}`);
   }
 
-  // Processar eventos
+  // 🔑 REGRA DE OURO: Processar apenas eventos relevantes, ignorar o resto
+  // ✅ SEMPRE retornar 200, mesmo para eventos não tratados
   try {
-    console.log('🔄 Processando:', event.type);
-    
-    if (event.type === 'checkout.session.completed') {
-      const session = event.data.object;
-      const userId = session.client_reference_id;
-      
-      console.log('💳 Checkout:', {
-        id: session.id,
-        userId,
-        status: session.payment_status
-      });
-
-      if (session.payment_status === 'paid' && userId) {
-        console.log('💰 Pagamento confirmado! userId:', userId);
+    switch (event.type) {
+      case 'checkout.session.completed': {
+        const session = event.data.object;
+        const userId = session.client_reference_id;
         
-        let updated = updateUserPayment(
+        console.log('💳 Checkout concluído:', {
+          id: session.id,
           userId,
-          true,
-          session.customer,
-          new Date().toISOString()
-        );
+          status: session.payment_status
+        });
 
-        if (!updated) {
-          console.log('👤 Criando usuário...');
-          createOrUpdateUser(userId, {
-            email: session.customer_details?.email || '',
-            name: session.customer_details?.name || '',
-            hasPaid: true
-          });
-          updated = updateUserPayment(userId, true, session.customer, new Date().toISOString());
-        }
+        if (session.payment_status === 'paid' && userId) {
+          console.log('💰 Pagamento confirmado! userId:', userId);
+          
+          let updated = updateUserPayment(
+            userId,
+            true,
+            session.customer,
+            new Date().toISOString()
+          );
 
-        if (updated) {
-          console.log('✅ ✅ ✅ SUCESSO TOTAL! Usuário:', userId, 'hasPaid:', updated.hasPaid);
+          if (!updated) {
+            console.log('👤 Criando usuário...');
+            createOrUpdateUser(userId, {
+              email: session.customer_details?.email || '',
+              name: session.customer_details?.name || '',
+              hasPaid: true
+            });
+            updated = updateUserPayment(userId, true, session.customer, new Date().toISOString());
+          }
+
+          if (updated) {
+            console.log('✅ ✅ ✅ SUCESSO TOTAL! Usuário:', userId, 'hasPaid:', updated.hasPaid);
+          } else {
+            console.error('❌ Falha ao atualizar usuário');
+          }
         } else {
-          console.error('❌ Falha ao atualizar');
+          console.log('⚠️ Checkout não pago ou sem userId');
         }
-      } else {
-        console.log('⚠️ Não pago ou sem userId');
+        break;
       }
-    } else {
-      console.log('ℹ️ Evento:', event.type);
+
+      case 'payment_intent.succeeded': {
+        const paymentIntent = event.data.object;
+        console.log('💳 Pagamento confirmado (payment_intent):', paymentIntent.id);
+        // Se precisar processar payment_intent também, adicione aqui
+        break;
+      }
+
+      default:
+        // ✅ IGNORAR eventos desconhecidos sem erro
+        console.log('ℹ️ Evento ignorado:', event.type);
     }
 
+    // ✅ SEMPRE responder 200 (regra de ouro)
     return res.status(200).json({ received: true });
     
   } catch (error) {
-    console.error('❌ Erro processar:', error.message);
+    // ✅ SEMPRE retornar 200, mesmo com erro no processamento
+    console.error('❌ Erro processar evento:', error.message);
     console.error('Stack:', error.stack);
     return res.status(200).json({ 
       received: true,
