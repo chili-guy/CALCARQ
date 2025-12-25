@@ -36,6 +36,7 @@ app.use((req, res, next) => {
 
 // Caminhos dos arquivos de dados
 // Na Vercel, usa /tmp para escrita (único diretório disponível)
+// No Railway, usa o diretório data normal
 const DATA_DIR = process.env.VERCEL 
   ? '/tmp' 
   : path.join(__dirname, 'data');
@@ -492,16 +493,43 @@ app.get('/api/stats', (req, res) => {
   }
 });
 
+// Servir arquivos estáticos do frontend (apenas em produção no Railway)
+// O frontend deve ser buildado antes (npm run build na raiz)
+if (process.env.RAILWAY || process.env.NODE_ENV === 'production') {
+  const frontendPath = path.join(__dirname, '..', 'dist');
+  if (fs.existsSync(frontendPath)) {
+    // Servir arquivos estáticos
+    app.use(express.static(frontendPath));
+    
+    // Para todas as rotas que não são API, servir o index.html (SPA)
+    app.get('*', (req, res, next) => {
+      // Se for uma rota de API, não servir o frontend
+      if (req.path.startsWith('/api/') || req.path.startsWith('/health')) {
+        return next();
+      }
+      res.sendFile(path.join(frontendPath, 'index.html'));
+    });
+    
+    console.log('✅ Frontend estático configurado em:', frontendPath);
+  } else {
+    console.warn('⚠️ Diretório dist não encontrado. Frontend não será servido.');
+  }
+}
+
 // Exportar app para uso em serverless functions (Vercel)
 export default app;
 
-// Iniciar servidor apenas se não estiver em ambiente serverless
-if (process.env.VERCEL !== '1' && process.env.NODE_ENV !== 'production') {
+// Iniciar servidor apenas se não estiver em ambiente serverless (Vercel)
+// No Railway, sempre inicia o servidor
+if (process.env.VERCEL !== '1') {
   const PORT = process.env.PORT || 3001;
-  app.listen(PORT, () => {
+  app.listen(PORT, '0.0.0.0', () => {
     console.log(`🚀 Servidor rodando na porta ${PORT}`);
     console.log(`📊 Health check: http://localhost:${PORT}/health`);
     console.log(`🔔 Webhook: http://localhost:${PORT}/api/webhook/stripe`);
     console.log(`📝 Logs: http://localhost:${PORT}/api/logs`);
+    if (process.env.RAILWAY) {
+      console.log(`🌐 Railway: Servindo frontend + backend`);
+    }
   });
 }

@@ -169,3 +169,4 @@ Você pode usar outra porta se a 3001 estiver ocupada.
 - Cartões de teste: https://stripe.com/docs/testing
 
 
+
