@@ -399,17 +399,44 @@ app.post('/api/webhook/stripe', express.raw({ type: 'application/json' }), async
               created: { gte: Math.floor(Date.now() / 1000) - 3600 } // Última hora
             });
             
+            logPaymentEvent('SEARCHING_CHECKOUT_SESSIONS', {
+              paymentIntentId: paymentIntent.id,
+              sessionsFound: sessions.data.length
+            });
+            
             for (const session of sessions.data) {
               // Verificar se o payment_intent está relacionado a esta sessão
-              if (session.payment_intent === paymentIntent.id || 
-                  (session.payment_intent && typeof session.payment_intent === 'object' && session.payment_intent.id === paymentIntent.id)) {
+              const sessionPaymentIntent = session.payment_intent;
+              const sessionPaymentIntentId = typeof sessionPaymentIntent === 'string' 
+                ? sessionPaymentIntent 
+                : (sessionPaymentIntent?.id || null);
+              
+              if (sessionPaymentIntentId === paymentIntent.id) {
                 userId = session.client_reference_id;
                 logPaymentEvent('FOUND_CHECKOUT_SESSION', {
                   sessionId: session.id,
                   userId,
-                  paymentIntentId: paymentIntent.id
+                  paymentIntentId: paymentIntent.id,
+                  sessionPaymentIntent: sessionPaymentIntentId
                 });
                 break;
+              }
+            }
+            
+            // Se não encontrou, tentar buscar por charge (última tentativa)
+            if (!userId && paymentIntent.latest_charge) {
+              try {
+                const charge = await stripe.charges.retrieve(paymentIntent.latest_charge);
+                // Charge pode ter metadata ou customer
+                if (charge.metadata && charge.metadata.userId) {
+                  userId = charge.metadata.userId;
+                  logPaymentEvent('FOUND_USER_ID_IN_CHARGE', {
+                    userId,
+                    chargeId: charge.id
+                  });
+                }
+              } catch (chargeError) {
+                console.error('Erro ao buscar charge:', chargeError);
               }
             }
           } catch (error) {
@@ -510,35 +537,109 @@ app.post('/api/webhook/stripe', express.raw({ type: 'application/json' }), async
 // Endpoint para verificar pagamento manualmente (fallback)
 app.post('/api/payment/verify', async (req, res) => {
   try {
-    const { userId, sessionId } = req.body;
+    const { userId, sessionId, paymentIntentId } = req.body;
 
-    if (!userId || !sessionId) {
-      return res.status(400).json({ error: 'userId e sessionId são obrigatórios' });
+    if (!userId) {
+      return res.status(400).json({ error: 'userId é obrigatório' });
     }
 
-    // Verificar sessão no Stripe
-    const session = await stripe.checkout.sessions.retrieve(sessionId);
+    // Opção 1: Verificar por sessionId (checkout session)
+    if (sessionId) {
+      try {
+        const session = await stripe.checkout.sessions.retrieve(sessionId);
 
-    logPaymentEvent('MANUAL_PAYMENT_VERIFICATION', {
-      userId,
-      sessionId,
-      paymentStatus: session.payment_status
-    });
-
-    if (session.payment_status === 'paid' && session.client_reference_id === userId) {
-      const updatedUser = updateUserPayment(
-        userId,
-        true,
-        session.customer,
-        new Date(session.created * 1000).toISOString()
-      );
-
-      if (updatedUser) {
-        return res.json({
-          success: true,
-          hasPaid: true,
-          message: 'Pagamento verificado com sucesso'
+        logPaymentEvent('MANUAL_PAYMENT_VERIFICATION_SESSION', {
+          userId,
+          sessionId,
+          paymentStatus: session.payment_status
         });
+
+        if (session.payment_status === 'paid' && session.client_reference_id === userId) {
+          const updatedUser = updateUserPayment(
+            userId,
+            true,
+            session.customer,
+            new Date(session.created * 1000).toISOString()
+          );
+
+          if (updatedUser) {
+            return res.json({
+              success: true,
+              hasPaid: true,
+              message: 'Pagamento verificado com sucesso (via session)'
+            });
+          }
+        }
+      } catch (sessionError) {
+        console.error('Erro ao verificar session:', sessionError);
+      }
+    }
+
+    // Opção 2: Verificar por paymentIntentId
+    if (paymentIntentId) {
+      try {
+        const paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId);
+
+        logPaymentEvent('MANUAL_PAYMENT_VERIFICATION_INTENT', {
+          userId,
+          paymentIntentId,
+          status: paymentIntent.status
+        });
+
+        if (paymentIntent.status === 'succeeded') {
+          // Buscar sessão relacionada
+          const sessions = await stripe.checkout.sessions.list({
+            limit: 100,
+            created: { gte: Math.floor(Date.now() / 1000) - 3600 }
+          });
+
+          for (const session of sessions.data) {
+            const sessionPaymentIntent = session.payment_intent;
+            const sessionPaymentIntentId = typeof sessionPaymentIntent === 'string' 
+              ? sessionPaymentIntent 
+              : (sessionPaymentIntent?.id || null);
+            
+            if (sessionPaymentIntentId === paymentIntentId && session.client_reference_id === userId) {
+              const updatedUser = updateUserPayment(
+                userId,
+                true,
+                paymentIntent.customer || null,
+                new Date(paymentIntent.created * 1000).toISOString()
+              );
+
+              if (updatedUser) {
+                return res.json({
+                  success: true,
+                  hasPaid: true,
+                  message: 'Pagamento verificado com sucesso (via payment intent)'
+                });
+              }
+            }
+          }
+
+          // Se não encontrou sessão, mas o payment intent está succeeded, atualizar mesmo assim
+          // (para casos onde o Payment Link não cria sessão)
+          const updatedUser = updateUserPayment(
+            userId,
+            true,
+            paymentIntent.customer || null,
+            new Date(paymentIntent.created * 1000).toISOString()
+          );
+
+          if (updatedUser) {
+            logPaymentEvent('PAYMENT_VERIFIED_WITHOUT_SESSION', {
+              userId,
+              paymentIntentId
+            });
+            return res.json({
+              success: true,
+              hasPaid: true,
+              message: 'Pagamento verificado com sucesso (sem sessão)'
+            });
+          }
+        }
+      } catch (intentError) {
+        console.error('Erro ao verificar payment intent:', intentError);
       }
     }
 

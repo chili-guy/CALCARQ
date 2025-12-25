@@ -65,10 +65,10 @@ class ApiClient {
     });
   }
 
-  async verifyPayment(userId: string, sessionId: string): Promise<{ success: boolean; hasPaid: boolean; message: string }> {
+  async verifyPayment(userId: string, sessionId?: string, paymentIntentId?: string): Promise<{ success: boolean; hasPaid: boolean; message: string }> {
     return this.request('/api/payment/verify', {
       method: 'POST',
-      body: JSON.stringify({ userId, sessionId }),
+      body: JSON.stringify({ userId, sessionId, paymentIntentId }),
     });
   }
 
