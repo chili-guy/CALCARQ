@@ -7,7 +7,9 @@ import { CheckCircle, XCircle, Loader } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { createPageUrl } from "@/utils";
 
-const STRIPE_CHECKOUT_URL = "https://buy.stripe.com/test_28E9AM9Ke6nGaYRdCS73G01";
+// Usar API para criar sessão (garante client_reference_id)
+// Fallback para link direto se API não estiver disponível
+const STRIPE_CHECKOUT_URL_FALLBACK = "https://buy.stripe.com/test_28E9AM9Ke6nGaYRdCS73G01";
 const POLL_INTERVAL = 3000; // Verificar a cada 3 segundos
 const MAX_POLL_ATTEMPTS = 60; // Máximo de 3 minutos
 
@@ -124,41 +126,72 @@ export default function Payment() {
       return;
     }
 
-    // Sincronizar usuário com backend antes do pagamento
-    try {
-      await api.syncUser(user.id, user.email, user.name);
-    } catch (error) {
-      console.error("Erro ao sincronizar usuário:", error);
-    }
-
-    // Construir URL de checkout com client_reference_id
-    // Nota: Para usar redirect após pagamento, você precisaria criar uma sessão via API
-    // Por enquanto, usamos o link direto e polling
-    const checkoutUrl = `${STRIPE_CHECKOUT_URL}?client_reference_id=${encodeURIComponent(user.id)}`;
-    
-    checkoutWindowRef.current = window.open(
-      checkoutUrl,
-      "_blank",
-      "width=600,height=700"
-    );
-
-    if (!checkoutWindowRef.current) {
-      alert("Por favor, permita pop-ups para este site para realizar o pagamento.");
-      return;
-    }
-
     setIsProcessing(true);
-    setPollAttempts(0);
     setStatus("pending");
 
-    // Iniciar polling para verificar status de pagamento
-    // O webhook do Stripe deve atualizar o status no backend
-    pollIntervalRef.current = setInterval(() => {
-      checkPaymentStatus();
-    }, POLL_INTERVAL);
+    try {
+      // Sincronizar usuário com backend antes do pagamento
+      await api.syncUser(user.id, user.email, user.name);
 
-    // Verificar imediatamente
-    checkPaymentStatus();
+      // Tentar criar sessão via API (garante client_reference_id)
+      try {
+        const { url } = await api.createCheckoutSession(user.id, user.email, user.name);
+        
+        // Abrir checkout do Stripe
+        checkoutWindowRef.current = window.open(
+          url,
+          "_blank",
+          "width=600,height=700"
+        );
+
+        if (!checkoutWindowRef.current) {
+          alert("Por favor, permita pop-ups para este site para realizar o pagamento.");
+          setIsProcessing(false);
+          return;
+        }
+
+        setPollAttempts(0);
+
+        // Iniciar polling para verificar status de pagamento
+        // O webhook do Stripe deve atualizar o status no backend
+        pollIntervalRef.current = setInterval(() => {
+          checkPaymentStatus();
+        }, POLL_INTERVAL);
+
+        // Verificar imediatamente
+        checkPaymentStatus();
+      } catch (apiError: any) {
+        // Se a API falhar (ex: STRIPE_PRICE_ID não configurado), usar fallback
+        console.warn("Erro ao criar sessão via API, usando link direto:", apiError);
+        
+        // Fallback: usar link direto
+        const checkoutUrl = `${STRIPE_CHECKOUT_URL_FALLBACK}?client_reference_id=${encodeURIComponent(user.id)}`;
+        
+        checkoutWindowRef.current = window.open(
+          checkoutUrl,
+          "_blank",
+          "width=600,height=700"
+        );
+
+        if (!checkoutWindowRef.current) {
+          alert("Por favor, permita pop-ups para este site para realizar o pagamento.");
+          setIsProcessing(false);
+          return;
+        }
+
+        setPollAttempts(0);
+
+        pollIntervalRef.current = setInterval(() => {
+          checkPaymentStatus();
+        }, POLL_INTERVAL);
+
+        checkPaymentStatus();
+      }
+    } catch (error) {
+      console.error("Erro ao iniciar checkout:", error);
+      setStatus("error");
+      setIsProcessing(false);
+    }
 
     // Monitorar quando a janela fechar
     const checkClosed = setInterval(() => {

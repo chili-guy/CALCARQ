@@ -97,7 +97,7 @@ PORT=3001
 
 3. **FRONTEND_URL**:
    - Depois que o deploy estiver pronto, copie a URL do Railway
-   - Formato: `https://seu-projeto.up.railway.app`
+   - Formato: `https://CALCARQ.railway.app`
 
 ### 3.3 Salvar Variáveis
 
@@ -108,12 +108,32 @@ PORT=3001
 
 ## 🌐 Passo 4: Configurar Domínio Público
 
-### 4.1 Gerar Domínio
+### 4.1 Encontrar o Link do Projeto
+
+O link do seu projeto aparece em **vários lugares** no Railway:
+
+#### 📍 Opção 1: Na Página Principal do Projeto
+1. No Railway, clique no seu projeto **CALCARQ**
+2. Na parte superior, você verá uma seção **"Networking"** ou **"Domains"**
+3. O link aparece como: `https://CALCARQ-production.up.railway.app` ou similar
+
+#### 📍 Opção 2: Em Settings → Networking
+1. No projeto Railway, clique em **"Settings"** (ícone de engrenagem)
+2. Role até a seção **"Networking"** ou **"Domains"**
+3. Você verá o domínio gerado automaticamente
+4. Se não houver domínio, clique em **"Generate Domain"**
+
+#### 📍 Opção 3: No Deploy
+1. Vá em **"Deployments"**
+2. Clique no deploy mais recente
+3. Na parte superior, você verá a URL do serviço
+
+### 4.2 Gerar Domínio (se não tiver)
 
 1. No projeto Railway, vá em **"Settings"**
-2. Role até **"Networking"**
-3. Clique em **"Generate Domain"**
-4. Copie a URL gerada (ex: `calcarq-production.up.railway.app`)
+2. Role até **"Networking"** ou **"Domains"**
+3. Clique em **"Generate Domain"** ou **"Add Domain"**
+4. Copie a URL gerada (ex: `calcarq-production.up.railway.app` ou `CALCARQ.railway.app`)
 
 ### 4.2 Atualizar FRONTEND_URL
 

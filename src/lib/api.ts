@@ -72,6 +72,13 @@ class ApiClient {
     });
   }
 
+  async createCheckoutSession(userId: string, email: string, name: string): Promise<{ sessionId: string; url: string }> {
+    return this.request('/api/checkout/create-session', {
+      method: 'POST',
+      body: JSON.stringify({ userId, email, name }),
+    });
+  }
+
   async getLogs(limit: number = 100): Promise<any> {
     return this.request(`/api/logs?limit=${limit}`);
   }
