@@ -1,7 +1,17 @@
 // Serverless function para webhook do Stripe na Vercel
-// Na Vercel, precisamos ler o body raw de forma específica
+// ✅ CORRIGIDO: Lê body como stream (compatível com Vercel)
 
 import Stripe from 'stripe';
+
+// ✅ CRÍTICO: Garantir Node.js runtime (não Edge)
+export const runtime = 'nodejs';
+
+// ✅ CRÍTICO: Desabilitar bodyParser para receber body raw
+export const config = {
+  api: {
+    bodyParser: false,
+  },
+};
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '', {
   apiVersion: '2024-06-20',
@@ -91,9 +101,9 @@ function createOrUpdateUser(userId, userData) {
   }
 }
 
-// Handler do webhook - Vercel Serverless Function
+// ✅ CORRIGIDO: Handler que lê body como stream (compatível Vercel)
 export default async function handler(req, res) {
-  console.log('🔔 WEBHOOK VERCEL');
+  console.log('🔔 WEBHOOK VERCEL - INÍCIO');
   console.log('Method:', req.method);
   
   if (req.method !== 'POST') {
@@ -105,80 +115,74 @@ export default async function handler(req, res) {
 
   console.log('Has sig:', !!sig);
   console.log('Has secret:', !!webhookSecret);
-  console.log('Body type:', typeof req.body);
-  
-  // Na Vercel, o body pode vir como string se não foi parseado
-  // Ou como objeto se foi parseado automaticamente
-  let rawBodyString;
-  let bodyBuffer;
+
+  // ✅ CRÍTICO: Ler body como stream (forma correta na Vercel)
+  let rawBody;
   
   try {
-    // Tentar todas as formas possíveis
-    if (typeof req.body === 'string') {
-      console.log('✅ Body é string');
-      rawBodyString = req.body;
-      bodyBuffer = Buffer.from(req.body, 'utf8');
-    } else if (Buffer.isBuffer(req.body)) {
+    // Na Vercel, com bodyParser: false, o body pode vir como:
+    // 1. Stream (precisa ler com for await)
+    // 2. Buffer direto
+    // 3. String
+    
+    if (req.body && Buffer.isBuffer(req.body)) {
+      // Já é Buffer
       console.log('✅ Body é Buffer');
-      rawBodyString = req.body.toString('utf8');
-      bodyBuffer = req.body;
-    } else if (req.body && typeof req.body === 'object') {
-      console.log('⚠️ Body foi parseado - tentando usar como está');
-      // Se foi parseado, não podemos verificar a assinatura corretamente
-      // Mas vamos tentar processar mesmo assim
-      rawBodyString = JSON.stringify(req.body);
-      bodyBuffer = Buffer.from(rawBodyString, 'utf8');
-      console.warn('⚠️ ATENÇÃO: Body foi parseado, verificação de assinatura pode falhar');
+      rawBody = req.body;
+    } else if (typeof req.body === 'string') {
+      // É string
+      console.log('✅ Body é string');
+      rawBody = Buffer.from(req.body, 'utf8');
+    } else if (req.body && typeof req.body === 'object' && !Buffer.isBuffer(req.body)) {
+      // Foi parseado (não deveria acontecer com bodyParser: false)
+      console.warn('⚠️ Body foi parseado - tentando reconstruir');
+      rawBody = Buffer.from(JSON.stringify(req.body), 'utf8');
     } else {
-      console.error('❌ Body não encontrado');
-      return res.status(200).json({ 
-        received: true,
-        error: 'Body not found',
-        bodyType: typeof req.body
-      });
+      // Tentar ler como stream
+      console.log('📥 Lendo body como stream...');
+      const chunks = [];
+      
+      // ✅ FORMA CORRETA: for await (compatível Vercel)
+      for await (const chunk of req) {
+        chunks.push(chunk);
+      }
+      
+      rawBody = Buffer.concat(chunks);
+      console.log('✅ Body lido do stream, tamanho:', rawBody.length);
     }
 
-    console.log('Body length:', bodyBuffer.length);
+    if (!rawBody || rawBody.length === 0) {
+      console.error('❌ Body vazio');
+      return res.status(400).json({ error: 'Empty body' });
+    }
+
+    console.log('📏 Body length:', rawBody.length);
 
   } catch (error) {
     console.error('❌ Erro ler body:', error.message);
-    return res.status(200).json({ 
-      received: true,
+    console.error('Stack:', error.stack);
+    return res.status(400).json({ 
       error: 'Error reading body',
       message: error.message 
     });
   }
 
+  // Verificar assinatura e construir evento
   let event;
 
   try {
     if (!webhookSecret || webhookSecret === 'whsec_SEU_SECRET_AQUI') {
       console.warn('⚠️ Sem secret, parseando sem verificação');
-      event = JSON.parse(rawBodyString);
+      event = JSON.parse(rawBody.toString('utf8'));
       console.log('✅ Evento parseado:', event.type);
     } else {
       console.log('🔐 Verificando assinatura...');
-      try {
-        event = stripe.webhooks.constructEvent(bodyBuffer, sig, webhookSecret);
-        console.log('✅ Assinatura OK! Evento:', event.type);
-      } catch (verifyError) {
-        console.error('❌ Erro verificação:', verifyError.message);
-        // Se a verificação falhar mas o body foi parseado, tentar processar mesmo assim
-        if (typeof req.body === 'object') {
-          console.warn('⚠️ Tentando processar sem verificação (body foi parseado)');
-          event = req.body;
-        } else {
-          throw verifyError;
-        }
-      }
+      event = stripe.webhooks.constructEvent(rawBody, sig, webhookSecret);
+      console.log('✅ Assinatura OK! Evento:', event.type);
     }
   } catch (err) {
-    console.error('❌ Erro geral:', err.message);
-    return res.status(200).json({ 
-      received: true,
-      error: 'Verification/parsing failed',
-      message: err.message 
-    });
+    console.error('❌ Erro verificação:', err.message);
+    return res.status(400).send(`Webhook Error: ${err.message}`);
   }
 
   // Processar eventos
