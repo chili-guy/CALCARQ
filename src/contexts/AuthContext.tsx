@@ -76,11 +76,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         
         // Atualizar localmente se necessário
         if (paymentStatus.hasPaid !== currentUser.hasPaid) {
-          db.updateUserPayment(currentUser.id, paymentStatus.hasPaid);
+          db.updateUserPayment(
+            currentUser.id, 
+            paymentStatus.hasPaid,
+            paymentStatus.stripeCustomerId || undefined
+          );
         }
         
         const updatedUser = db.getCurrentUser();
-        setUser(updatedUser);
+        if (updatedUser) {
+          setUser(updatedUser);
+        }
       } catch (error) {
         console.error("Erro ao atualizar usuário:", error);
         // Em caso de erro, usar dados locais

@@ -24,11 +24,21 @@ app.use(cors({
   origin: process.env.FRONTEND_URL || 'http://localhost:5173',
   credentials: true
 }));
-app.use(express.json());
-app.use(express.raw({ type: 'application/json' }));
+
+// Para todas as rotas, usamos express.json() EXCETO para o webhook
+// O webhook precisa receber o body raw, então excluímos essa rota do parsing JSON
+app.use((req, res, next) => {
+  if (req.path === '/api/webhook/stripe') {
+    return next();
+  }
+  express.json()(req, res, next);
+});
 
 // Caminhos dos arquivos de dados
-const DATA_DIR = path.join(__dirname, 'data');
+// Na Vercel, usa /tmp para escrita (único diretório disponível)
+const DATA_DIR = process.env.VERCEL 
+  ? '/tmp' 
+  : path.join(__dirname, 'data');
 const USERS_FILE = path.join(DATA_DIR, 'users.json');
 const LOGS_FILE = path.join(DATA_DIR, 'payment-logs.json');
 
@@ -214,25 +224,87 @@ app.post('/api/user/sync', (req, res) => {
   }
 });
 
+// Criar sessão de checkout do Stripe (opcional - para URLs de redirecionamento)
+// Nota: Requer PRICE_ID do Stripe configurado em .env
+app.post('/api/checkout/create-session', async (req, res) => {
+  try {
+    const { userId, email, name } = req.body;
+    const priceId = process.env.STRIPE_PRICE_ID;
+    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
+    
+    if (!userId) {
+      return res.status(400).json({ error: 'userId é obrigatório' });
+    }
+    
+    // Sincronizar usuário
+    createOrUpdateUser(userId, { email, name });
+    
+    // Se não tiver PRICE_ID configurado, retornar erro
+    if (!priceId) {
+      return res.status(400).json({ 
+        error: 'STRIPE_PRICE_ID não configurado. Use o link direto do Stripe.' 
+      });
+    }
+    
+    // Criar sessão de checkout
+    const session = await stripe.checkout.sessions.create({
+      payment_method_types: ['card'],
+      line_items: [
+        {
+          price: priceId,
+          quantity: 1,
+        },
+      ],
+      mode: 'payment',
+      client_reference_id: userId,
+      success_url: `${frontendUrl}/payment?session_id={CHECKOUT_SESSION_ID}&success=true`,
+      cancel_url: `${frontendUrl}/payment?canceled=true`,
+      customer_email: email,
+    });
+    
+    logPaymentEvent('CHECKOUT_SESSION_CREATED', {
+      userId,
+      sessionId: session.id
+    });
+    
+    res.json({
+      sessionId: session.id,
+      url: session.url
+    });
+  } catch (error) {
+    console.error('Erro ao criar sessão de checkout:', error);
+    logPaymentEvent('CHECKOUT_SESSION_ERROR', {
+      error: error.message
+    });
+    res.status(500).json({ error: 'Erro ao criar sessão de checkout' });
+  }
+});
+
 // Webhook do Stripe
+// IMPORTANTE: Esta rota precisa receber o body RAW (não parseado) para verificar a assinatura
 app.post('/api/webhook/stripe', express.raw({ type: 'application/json' }), async (req, res) => {
   const sig = req.headers['stripe-signature'];
   const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
 
+  // O body já deve ser um Buffer devido ao middleware express.raw()
+  const body = req.body;
+
   let event;
 
   try {
-    if (!webhookSecret) {
+    if (!webhookSecret || webhookSecret === 'whsec_SEU_SECRET_AQUI') {
       console.warn('STRIPE_WEBHOOK_SECRET não configurado. Usando verificação básica.');
       // Em desenvolvimento, podemos processar sem verificação
-      event = JSON.parse(req.body.toString());
+      event = JSON.parse(body.toString());
     } else {
-      event = stripe.webhooks.constructEvent(req.body, sig, webhookSecret);
+      event = stripe.webhooks.constructEvent(body, sig, webhookSecret);
     }
   } catch (err) {
     logPaymentEvent('WEBHOOK_ERROR', {
       error: err.message,
-      ip: req.ip
+      ip: req.ip,
+      hasSignature: !!sig,
+      hasSecret: !!webhookSecret
     });
     console.error('Erro no webhook:', err.message);
     return res.status(400).send(`Webhook Error: ${err.message}`);
@@ -250,10 +322,12 @@ app.post('/api/webhook/stripe', express.raw({ type: 'application/json' }), async
           userId,
           amount: session.amount_total,
           currency: session.currency,
-          customerEmail: session.customer_details?.email
+          customerEmail: session.customer_details?.email,
+          paymentStatus: session.payment_status
         });
 
-        if (userId) {
+        // Verificar se o pagamento foi realmente concluído
+        if (session.payment_status === 'paid' && userId) {
           // Atualizar status de pagamento
           const updatedUser = updateUserPayment(
             userId,
@@ -265,14 +339,29 @@ app.post('/api/webhook/stripe', express.raw({ type: 'application/json' }), async
           if (updatedUser) {
             logPaymentEvent('PAYMENT_PROCESSED_SUCCESS', {
               userId,
-              sessionId: session.id
+              sessionId: session.id,
+              hasPaid: updatedUser.hasPaid
             });
           } else {
-            logPaymentEvent('PAYMENT_PROCESSED_USER_NOT_FOUND', {
+            // Se usuário não existe, criar
+            const newUser = createOrUpdateUser(userId, {
+              email: session.customer_details?.email || '',
+              name: session.customer_details?.name || '',
+              hasPaid: true
+            });
+            updateUserPayment(userId, true, session.customer, new Date().toISOString());
+            
+            logPaymentEvent('PAYMENT_PROCESSED_USER_CREATED', {
               userId,
               sessionId: session.id
             });
           }
+        } else if (userId) {
+          logPaymentEvent('CHECKOUT_SESSION_NOT_PAID', {
+            userId,
+            sessionId: session.id,
+            paymentStatus: session.payment_status
+          });
         }
         break;
 
@@ -403,10 +492,16 @@ app.get('/api/stats', (req, res) => {
   }
 });
 
-// Iniciar servidor
-app.listen(PORT, () => {
-  console.log(`🚀 Servidor rodando na porta ${PORT}`);
-  console.log(`📊 Health check: http://localhost:${PORT}/health`);
-  console.log(`🔔 Webhook: http://localhost:${PORT}/api/webhook/stripe`);
-  console.log(`📝 Logs: http://localhost:${PORT}/api/logs`);
-});
+// Exportar app para uso em serverless functions (Vercel)
+export default app;
+
+// Iniciar servidor apenas se não estiver em ambiente serverless
+if (process.env.VERCEL !== '1' && process.env.NODE_ENV !== 'production') {
+  const PORT = process.env.PORT || 3001;
+  app.listen(PORT, () => {
+    console.log(`🚀 Servidor rodando na porta ${PORT}`);
+    console.log(`📊 Health check: http://localhost:${PORT}/health`);
+    console.log(`🔔 Webhook: http://localhost:${PORT}/api/webhook/stripe`);
+    console.log(`📝 Logs: http://localhost:${PORT}/api/logs`);
+  });
+}

@@ -99,19 +99,22 @@ export default function Payment() {
           clearInterval(pollIntervalRef.current);
           pollIntervalRef.current = null;
         }
+        
+        // Atualizar usuário local e no contexto
         await refreshUser();
         setStatus("success");
         setIsProcessing(false);
         
+        // Redirecionar após 1 segundo
         setTimeout(() => {
           navigate(createPageUrl("Calculator"), { replace: true });
-        }, 2000);
+        }, 1000);
       } else {
-        setPollAttempts(prev => prev + 1);
+        setPollAttempts((prev: number) => prev + 1);
       }
     } catch (error) {
       console.error("Erro ao verificar status de pagamento:", error);
-      setPollAttempts(prev => prev + 1);
+      setPollAttempts((prev: number) => prev + 1);
     }
   };
 
@@ -128,8 +131,11 @@ export default function Payment() {
       console.error("Erro ao sincronizar usuário:", error);
     }
 
-    // Abrir Stripe Checkout em nova aba
-    const checkoutUrl = `${STRIPE_CHECKOUT_URL}?client_reference_id=${user.id}`;
+    // Construir URL de checkout com client_reference_id
+    // Nota: Para usar redirect após pagamento, você precisaria criar uma sessão via API
+    // Por enquanto, usamos o link direto e polling
+    const checkoutUrl = `${STRIPE_CHECKOUT_URL}?client_reference_id=${encodeURIComponent(user.id)}`;
+    
     checkoutWindowRef.current = window.open(
       checkoutUrl,
       "_blank",
@@ -146,29 +152,39 @@ export default function Payment() {
     setStatus("pending");
 
     // Iniciar polling para verificar status de pagamento
+    // O webhook do Stripe deve atualizar o status no backend
     pollIntervalRef.current = setInterval(() => {
       checkPaymentStatus();
     }, POLL_INTERVAL);
 
-    // Verificar imediatamente também
+    // Verificar imediatamente
     checkPaymentStatus();
 
     // Monitorar quando a janela fechar
     const checkClosed = setInterval(() => {
       if (checkoutWindowRef.current?.closed) {
         clearInterval(checkClosed);
-        // Continuar verificando por mais alguns segundos caso o webhook ainda não tenha processado
+        // Continuar verificando por mais tempo caso o webhook ainda não tenha processado
+        // O webhook pode levar alguns segundos para processar
         setTimeout(() => {
           if (pollIntervalRef.current) {
-            clearInterval(pollIntervalRef.current);
-            pollIntervalRef.current = null;
+            // Continuar verificando por mais 30 segundos após fechar
+            const extendedPolling = setInterval(() => {
+              checkPaymentStatus();
+            }, POLL_INTERVAL);
+            
+            setTimeout(() => {
+              clearInterval(extendedPolling);
+              if (pollIntervalRef.current) {
+                clearInterval(pollIntervalRef.current);
+                pollIntervalRef.current = null;
+              }
+              if (status === "pending") {
+                setIsProcessing(false);
+              }
+            }, 30000); // 30 segundos adicionais
           }
-          if (status === "pending") {
-            setIsProcessing(false);
-            // Verificar uma última vez
-            checkPaymentStatus();
-          }
-        }, 5000);
+        }, 2000);
       }
     }, 1000);
 
