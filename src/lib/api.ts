@@ -1,6 +1,22 @@
 // API client para comunicação com o backend
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+// Em produção (Railway), se VITE_API_URL não estiver configurado,
+// usar a URL atual (mesmo domínio) já que frontend e backend estão juntos
+const getApiBaseUrl = () => {
+  if (import.meta.env.VITE_API_URL) {
+    return import.meta.env.VITE_API_URL;
+  }
+  
+  // Se estiver em produção (não localhost), usar URL relativa
+  if (typeof window !== 'undefined' && window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
+    return ''; // URL relativa (mesmo domínio)
+  }
+  
+  // Desenvolvimento local
+  return 'http://localhost:3001';
+};
+
+const API_BASE_URL = getApiBaseUrl();
 
 export interface PaymentStatus {
   userId: string;
