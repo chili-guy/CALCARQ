@@ -74,8 +74,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         // Buscar status atualizado do backend
         const paymentStatus = await api.getPaymentStatus(currentUser.id);
         
+        console.log(`🔄 RefreshUser - Backend: hasPaid=${paymentStatus.hasPaid}, Local: hasPaid=${currentUser.hasPaid}`);
+        
         // Atualizar localmente se necessário
         if (paymentStatus.hasPaid !== currentUser.hasPaid) {
+          console.log(`📝 Atualizando pagamento local: ${currentUser.hasPaid} → ${paymentStatus.hasPaid}`);
           db.updateUserPayment(
             currentUser.id, 
             paymentStatus.hasPaid,
@@ -85,6 +88,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         
         const updatedUser = db.getCurrentUser();
         if (updatedUser) {
+          console.log(`✅ Usuário atualizado no contexto: hasPaid=${updatedUser.hasPaid}`);
           setUser(updatedUser);
         }
       } catch (error) {

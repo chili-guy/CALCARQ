@@ -95,15 +95,25 @@ export default function Payment() {
     try {
       const paymentStatus = await api.getPaymentStatus(user.id);
       
+      console.log(`🔍 Verificando pagamento - hasPaid: ${paymentStatus.hasPaid}, userId: ${user.id}`);
+      
       if (paymentStatus.hasPaid) {
         // Pagamento confirmado!
+        console.log("✅ Pagamento confirmado! hasPaid = true");
         if (pollIntervalRef.current) {
           clearInterval(pollIntervalRef.current);
           pollIntervalRef.current = null;
         }
         
         // Atualizar usuário local e no contexto
-        await refreshUser();
+        try {
+          await refreshUser();
+          console.log("✅ Usuário atualizado no contexto");
+        } catch (refreshError) {
+          console.error("Erro ao atualizar usuário:", refreshError);
+          // Continuar mesmo se refresh falhar
+        }
+        
         setStatus("success");
         setIsProcessing(false);
         
@@ -112,7 +122,13 @@ export default function Payment() {
           navigate(createPageUrl("Calculator"), { replace: true });
         }, 1000);
       } else {
-        setPollAttempts((prev: number) => prev + 1);
+        const attempts = pollAttempts + 1;
+        setPollAttempts(attempts);
+        if (attempts % 10 === 0) {
+          // A cada 10 tentativas, logar para debug
+          console.log(`⏳ Aguardando confirmação... Tentativa ${attempts}/${MAX_POLL_ATTEMPTS}`);
+          console.log(`   Status atual: hasPaid = ${paymentStatus.hasPaid}`);
+        }
       }
     } catch (error) {
       console.error("Erro ao verificar status de pagamento:", error);
@@ -190,17 +206,23 @@ export default function Payment() {
       if (error?.message) {
         console.error("Detalhes do erro:", error.message);
       }
+      return; // Sair se houver erro
     }
 
     // Monitorar quando a janela fechar
     const checkClosed = setInterval(() => {
       if (checkoutWindowRef.current?.closed) {
         clearInterval(checkClosed);
+        console.log("🪟 Janela do checkout fechada, continuando verificação...");
+        
+        // Verificar imediatamente quando a janela fecha
+        checkPaymentStatus();
+        
         // Continuar verificando por mais tempo caso o webhook ainda não tenha processado
         // O webhook pode levar alguns segundos para processar
         setTimeout(() => {
           if (pollIntervalRef.current) {
-            // Continuar verificando por mais 30 segundos após fechar
+            // Continuar verificando por mais 60 segundos após fechar (aumentado)
             const extendedPolling = setInterval(() => {
               checkPaymentStatus();
             }, POLL_INTERVAL);
@@ -211,12 +233,19 @@ export default function Payment() {
                 clearInterval(pollIntervalRef.current);
                 pollIntervalRef.current = null;
               }
-              if (status === "pending") {
+              // Se ainda estiver pendente após todo esse tempo, tentar verificação manual
+              if (status === "pending" && user) {
+                console.log("⏱️ Timeout atingido, tentando verificação manual...");
+                // Tentar verificação manual como último recurso
+                // (o backend vai buscar payment_intents recentes)
+                api.verifyPayment(user.id).catch(err => {
+                  console.error("Erro na verificação manual:", err);
+                });
                 setIsProcessing(false);
               }
-            }, 30000); // 30 segundos adicionais
+            }, 60000); // 60 segundos adicionais (aumentado de 30)
           }
-        }, 2000);
+        }, 3000); // Aguardar 3 segundos antes de começar polling estendido
       }
     }, 1000);
 
