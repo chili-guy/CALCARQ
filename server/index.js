@@ -368,11 +368,113 @@ app.post('/api/webhook/stripe', express.raw({ type: 'application/json' }), async
 
       case 'payment_intent.succeeded':
         const paymentIntent = event.data.object;
+        
         logPaymentEvent('PAYMENT_INTENT_SUCCEEDED', {
           paymentIntentId: paymentIntent.id,
           amount: paymentIntent.amount,
-          currency: paymentIntent.currency
+          currency: paymentIntent.currency,
+          metadata: paymentIntent.metadata,
+          customer: paymentIntent.customer
         });
+        
+        // Tentar encontrar o userId através de metadata ou buscar a sessão de checkout
+        let userId = null;
+        
+        // Opção 1: userId pode estar em metadata
+        if (paymentIntent.metadata && paymentIntent.metadata.userId) {
+          userId = paymentIntent.metadata.userId;
+          logPaymentEvent('FOUND_USER_ID_IN_METADATA', {
+            userId,
+            paymentIntentId: paymentIntent.id
+          });
+        }
+        
+        // Opção 2: Buscar a sessão de checkout relacionada
+        if (!userId) {
+          try {
+            // Buscar todas as sessões de checkout recentes e verificar se alguma tem este payment_intent
+            const sessions = await stripe.checkout.sessions.list({
+              limit: 100,
+              created: { gte: Math.floor(Date.now() / 1000) - 3600 } // Última hora
+            });
+            
+            for (const session of sessions.data) {
+              // Verificar se o payment_intent está relacionado a esta sessão
+              if (session.payment_intent === paymentIntent.id || 
+                  (session.payment_intent && typeof session.payment_intent === 'object' && session.payment_intent.id === paymentIntent.id)) {
+                userId = session.client_reference_id;
+                logPaymentEvent('FOUND_CHECKOUT_SESSION', {
+                  sessionId: session.id,
+                  userId,
+                  paymentIntentId: paymentIntent.id
+                });
+                break;
+              }
+            }
+          } catch (error) {
+            console.error('Erro ao buscar sessão de checkout:', error);
+            logPaymentEvent('ERROR_FINDING_SESSION', {
+              error: error.message,
+              paymentIntentId: paymentIntent.id
+            });
+          }
+        }
+        
+        // Opção 3: Se ainda não encontrou, buscar por customer (se houver)
+        if (!userId && paymentIntent.customer) {
+          try {
+            const customer = await stripe.customers.retrieve(paymentIntent.customer);
+            if (customer && !customer.deleted && customer.metadata && customer.metadata.userId) {
+              userId = customer.metadata.userId;
+              logPaymentEvent('FOUND_USER_ID_IN_CUSTOMER', {
+                userId,
+                customerId: paymentIntent.customer
+              });
+            }
+          } catch (error) {
+            console.error('Erro ao buscar customer:', error);
+          }
+        }
+        
+        // Se encontrou userId, atualizar status de pagamento
+        if (userId) {
+          const updatedUser = updateUserPayment(
+            userId,
+            true,
+            paymentIntent.customer || null,
+            new Date(paymentIntent.created * 1000).toISOString()
+          );
+          
+          if (updatedUser) {
+            logPaymentEvent('PAYMENT_PROCESSED_FROM_INTENT', {
+              userId,
+              paymentIntentId: paymentIntent.id,
+              hasPaid: updatedUser.hasPaid,
+              amount: paymentIntent.amount
+            });
+          } else {
+            // Se usuário não existe, tentar criar com dados disponíveis
+            // Nota: payment_intent pode não ter email/nome, então criamos apenas com userId
+            const newUser = createOrUpdateUser(userId, {
+              email: '',
+              name: '',
+              hasPaid: true
+            });
+            updateUserPayment(userId, true, paymentIntent.customer || null, new Date(paymentIntent.created * 1000).toISOString());
+            
+            logPaymentEvent('PAYMENT_PROCESSED_USER_CREATED_FROM_INTENT', {
+              userId,
+              paymentIntentId: paymentIntent.id
+            });
+          }
+        } else {
+          logPaymentEvent('PAYMENT_INTENT_NO_USER_ID', {
+            paymentIntentId: paymentIntent.id,
+            metadata: paymentIntent.metadata,
+            customer: paymentIntent.customer,
+            warning: 'Pagamento processado mas não foi possível identificar o usuário'
+          });
+        }
         break;
 
       case 'payment_intent.payment_failed':
