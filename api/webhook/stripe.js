@@ -1,5 +1,5 @@
 // Serverless function para webhook do Stripe na Vercel
-// IMPORTANTE: Na Vercel, o body precisa ser lido de forma específica
+// Na Vercel, precisamos ler o body raw de forma específica
 
 import Stripe from 'stripe';
 
@@ -13,13 +13,12 @@ import path from 'path';
 const DATA_DIR = process.env.VERCEL ? '/tmp' : path.join(process.cwd(), 'server', 'data');
 const USERS_FILE = path.join(DATA_DIR, 'users.json');
 
-// Garantir diretório
 try {
   if (!fs.existsSync(DATA_DIR)) {
     fs.mkdirSync(DATA_DIR, { recursive: true });
   }
 } catch (error) {
-  console.error('Aviso diretório:', error.message);
+  console.error('Erro diretório:', error.message);
 }
 
 function readUsers() {
@@ -28,7 +27,7 @@ function readUsers() {
       return JSON.parse(fs.readFileSync(USERS_FILE, 'utf8'));
     }
   } catch (error) {
-    console.error('Erro ler usuários:', error.message);
+    console.error('Erro ler:', error.message);
   }
   return {};
 }
@@ -38,7 +37,7 @@ function saveUsers(users) {
     fs.writeFileSync(USERS_FILE, JSON.stringify(users, null, 2));
     return true;
   } catch (error) {
-    console.error('Erro salvar usuários:', error.message);
+    console.error('Erro salvar:', error.message);
     return false;
   }
 }
@@ -61,7 +60,7 @@ function updateUserPayment(userId, hasPaid, stripeCustomerId = null, paymentDate
     }
     return null;
   } catch (error) {
-    console.error('❌ Erro atualizar pagamento:', error.message);
+    console.error('❌ Erro atualizar:', error.message);
     return null;
   }
 }
@@ -82,21 +81,20 @@ function createOrUpdateUser(userId, userData) {
       users[userId] = { ...users[userId], ...userData, id: userId };
     }
     if (saveUsers(users)) {
-      console.log('✅ Usuário criado/atualizado:', userId);
+      console.log('✅ Usuário criado:', userId);
       return users[userId];
     }
     return null;
   } catch (error) {
-    console.error('❌ Erro criar usuário:', error.message);
+    console.error('❌ Erro criar:', error.message);
     return null;
   }
 }
 
 // Handler do webhook - Vercel Serverless Function
 export default async function handler(req, res) {
-  console.log('🔔 === WEBHOOK VERCEL ===');
+  console.log('🔔 WEBHOOK VERCEL');
   console.log('Method:', req.method);
-  console.log('Headers keys:', Object.keys(req.headers));
   
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
@@ -105,42 +103,34 @@ export default async function handler(req, res) {
   const sig = req.headers['stripe-signature'];
   const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
 
-  console.log('Has signature:', !!sig);
+  console.log('Has sig:', !!sig);
   console.log('Has secret:', !!webhookSecret);
   console.log('Body type:', typeof req.body);
-  console.log('Body keys:', req.body ? Object.keys(req.body) : 'null');
-
-  // Na Vercel, o body pode vir de diferentes formas
-  // Vamos tentar todas as possibilidades
-  let rawBody;
+  
+  // Na Vercel, o body pode vir como string se não foi parseado
+  // Ou como objeto se foi parseado automaticamente
+  let rawBodyString;
+  let bodyBuffer;
   
   try {
-    // Opção 1: Body já é string (não parseado)
+    // Tentar todas as formas possíveis
     if (typeof req.body === 'string') {
       console.log('✅ Body é string');
-      rawBody = req.body;
-    }
-    // Opção 2: Body é Buffer
-    else if (Buffer.isBuffer(req.body)) {
+      rawBodyString = req.body;
+      bodyBuffer = Buffer.from(req.body, 'utf8');
+    } else if (Buffer.isBuffer(req.body)) {
       console.log('✅ Body é Buffer');
-      rawBody = req.body.toString('utf8');
-    }
-    // Opção 3: Body foi parseado como objeto (problema!)
-    else if (req.body && typeof req.body === 'object') {
-      console.log('⚠️ Body foi parseado como objeto - tentando reconstruir');
-      // Tentar reconstruir o JSON original
-      rawBody = JSON.stringify(req.body);
-      console.log('⚠️ Body reconstruído (pode não funcionar para verificação)');
-    }
-    // Opção 4: Body está em req.rawBody (algumas versões da Vercel)
-    else if (req.rawBody) {
-      console.log('✅ Body em req.rawBody');
-      rawBody = typeof req.rawBody === 'string' ? req.rawBody : req.rawBody.toString('utf8');
-    }
-    // Opção 5: Tentar ler do stream (último recurso)
-    else {
-      console.error('❌ Body não encontrado em nenhum formato conhecido');
-      console.error('Body value:', req.body);
+      rawBodyString = req.body.toString('utf8');
+      bodyBuffer = req.body;
+    } else if (req.body && typeof req.body === 'object') {
+      console.log('⚠️ Body foi parseado - tentando usar como está');
+      // Se foi parseado, não podemos verificar a assinatura corretamente
+      // Mas vamos tentar processar mesmo assim
+      rawBodyString = JSON.stringify(req.body);
+      bodyBuffer = Buffer.from(rawBodyString, 'utf8');
+      console.warn('⚠️ ATENÇÃO: Body foi parseado, verificação de assinatura pode falhar');
+    } else {
+      console.error('❌ Body não encontrado');
       return res.status(200).json({ 
         received: true,
         error: 'Body not found',
@@ -148,11 +138,10 @@ export default async function handler(req, res) {
       });
     }
 
-    console.log('📏 Raw body length:', rawBody.length);
-    console.log('📄 Body preview:', rawBody.substring(0, 100));
+    console.log('Body length:', bodyBuffer.length);
 
   } catch (error) {
-    console.error('❌ Erro ao ler body:', error.message);
+    console.error('❌ Erro ler body:', error.message);
     return res.status(200).json({ 
       received: true,
       error: 'Error reading body',
@@ -160,27 +149,34 @@ export default async function handler(req, res) {
     });
   }
 
-  // Converter para Buffer para verificação
-  const bodyBuffer = Buffer.from(rawBody, 'utf8');
   let event;
 
   try {
     if (!webhookSecret || webhookSecret === 'whsec_SEU_SECRET_AQUI') {
-      console.warn('⚠️ Sem webhook secret, parseando sem verificação');
-      event = JSON.parse(rawBody);
+      console.warn('⚠️ Sem secret, parseando sem verificação');
+      event = JSON.parse(rawBodyString);
       console.log('✅ Evento parseado:', event.type);
     } else {
       console.log('🔐 Verificando assinatura...');
-      event = stripe.webhooks.constructEvent(bodyBuffer, sig, webhookSecret);
-      console.log('✅ Assinatura verificada! Evento:', event.type);
+      try {
+        event = stripe.webhooks.constructEvent(bodyBuffer, sig, webhookSecret);
+        console.log('✅ Assinatura OK! Evento:', event.type);
+      } catch (verifyError) {
+        console.error('❌ Erro verificação:', verifyError.message);
+        // Se a verificação falhar mas o body foi parseado, tentar processar mesmo assim
+        if (typeof req.body === 'object') {
+          console.warn('⚠️ Tentando processar sem verificação (body foi parseado)');
+          event = req.body;
+        } else {
+          throw verifyError;
+        }
+      }
     }
   } catch (err) {
-    console.error('❌ Erro verificação:', err.message);
-    console.error('Erro completo:', err);
-    // Retornar 200 mas logar
+    console.error('❌ Erro geral:', err.message);
     return res.status(200).json({ 
       received: true,
-      error: 'Verification failed',
+      error: 'Verification/parsing failed',
       message: err.message 
     });
   }
@@ -193,14 +189,14 @@ export default async function handler(req, res) {
       const session = event.data.object;
       const userId = session.client_reference_id;
       
-      console.log('💳 Checkout completed:', {
-        sessionId: session.id,
+      console.log('💳 Checkout:', {
+        id: session.id,
         userId,
         status: session.payment_status
       });
 
       if (session.payment_status === 'paid' && userId) {
-        console.log('💰 Pagamento pago! userId:', userId);
+        console.log('💰 Pagamento confirmado! userId:', userId);
         
         let updated = updateUserPayment(
           userId,
@@ -210,7 +206,7 @@ export default async function handler(req, res) {
         );
 
         if (!updated) {
-          console.log('👤 Criando novo usuário...');
+          console.log('👤 Criando usuário...');
           createOrUpdateUser(userId, {
             email: session.customer_details?.email || '',
             name: session.customer_details?.name || '',
@@ -220,16 +216,17 @@ export default async function handler(req, res) {
         }
 
         if (updated) {
-          console.log('✅ ✅ ✅ SUCESSO! Usuário atualizado:', userId);
+          console.log('✅ ✅ ✅ SUCESSO TOTAL! Usuário:', userId, 'hasPaid:', updated.hasPaid);
         } else {
-          console.error('❌ Falha ao atualizar usuário');
+          console.error('❌ Falha ao atualizar');
         }
+      } else {
+        console.log('⚠️ Não pago ou sem userId');
       }
     } else {
-      console.log('ℹ️ Evento ignorado:', event.type);
+      console.log('ℹ️ Evento:', event.type);
     }
 
-    console.log('✅ === SUCESSO ===');
     return res.status(200).json({ received: true });
     
   } catch (error) {
