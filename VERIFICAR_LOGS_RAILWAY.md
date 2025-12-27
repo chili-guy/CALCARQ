@@ -118,3 +118,4 @@ Isso mostra os últimos logs de pagamento.
 
 **Última atualização**: Dezembro 2025
 
+

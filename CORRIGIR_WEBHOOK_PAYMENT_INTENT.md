@@ -82,3 +82,4 @@ Isso garante que o `client_reference_id` sempre esteja presente.
 
 **Última atualização**: Dezembro 2025
 
+

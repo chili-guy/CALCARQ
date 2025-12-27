@@ -8,6 +8,8 @@ interface FinalCalculationProps {
   adjustedHourlyRate: number;
   estimatedHours: number;
   onEstimatedHoursChange: (hours: number) => void;
+  commercialDiscount: number;
+  onCommercialDiscountChange: (discount: number) => void;
   variableExpenses: Expense[];
   onVariableExpensesChange: (expenses: Expense[]) => void;
   projectPrice: number;
@@ -15,6 +17,8 @@ interface FinalCalculationProps {
   factorLevels: Record<string, number>;
   factors: Array<{ id: string; name: string; weight: number }>;
   areaIntervals: Array<{ min: number; max: number | null; level: number }>;
+  fixedExpenses?: Expense[];
+  productiveHours?: number;
 }
 
 export default function FinalCalculation({
@@ -23,6 +27,8 @@ export default function FinalCalculation({
   adjustedHourlyRate,
   estimatedHours,
   onEstimatedHoursChange,
+  commercialDiscount,
+  onCommercialDiscountChange,
   variableExpenses,
   onVariableExpensesChange,
   projectPrice,
@@ -30,6 +36,8 @@ export default function FinalCalculation({
   factorLevels,
   factors,
   areaIntervals,
+  fixedExpenses = [],
+  productiveHours = 0,
 }: FinalCalculationProps) {
   const handleAddExpense = (expense: Expense) => {
     onVariableExpensesChange([...variableExpenses, expense]);
@@ -44,6 +52,20 @@ export default function FinalCalculation({
       variableExpenses.map((exp) => (exp.id === id ? { ...exp, ...updates } : exp))
     );
   };
+
+  // Calcular valores com desconto
+  const projectPriceWithDiscount = projectPrice * (1 - commercialDiscount / 100);
+  const discountAmount = projectPrice * (commercialDiscount / 100);
+  const adjustedHourlyRateWithDiscount = adjustedHourlyRate * (1 - commercialDiscount / 100);
+  const totalVariableExpenses = variableExpenses.reduce((sum, exp) => sum + exp.value, 0);
+  const finalSalePriceWithDiscount = projectPriceWithDiscount + totalVariableExpenses;
+
+  // Calcular lucro (só se não usar hora manual)
+  const totalFixedExpenses = fixedExpenses.reduce((sum, exp) => sum + exp.value, 0);
+  const fixedCostPerHour = productiveHours > 0 ? totalFixedExpenses / productiveHours : 0;
+  const profit = productiveHours > 0 
+    ? projectPriceWithDiscount - (fixedCostPerHour * estimatedHours)
+    : null;
 
   return (
     <div className="bg-white rounded-2xl border border-slate-200 p-6 lg:p-8 shadow-sm">
@@ -101,7 +123,7 @@ export default function FinalCalculation({
           <div className="p-4 bg-slate-50 rounded-lg">
             <div className="flex items-center gap-2 mb-2">
               <Clock className="w-4 h-4 text-slate-500" />
-              <span className="text-sm text-slate-600">Horas Estimadas</span>
+              <span className="text-sm text-slate-600">Estimativa de horas de projeto</span>
             </div>
             <input
               type="number"
@@ -119,27 +141,22 @@ export default function FinalCalculation({
         <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
           <h3 className="font-semibold text-blue-900 mb-3">Níveis de Complexidade dos Fatores:</h3>
           <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
-            {Object.entries(factorLevels).map(([factorId, level]) => (
-              <div key={factorId} className="text-sm">
-                <span className="text-blue-700">{factorId}:</span>{" "}
-                <span className="font-semibold text-blue-900">Nível {level}</span>
-              </div>
-            ))}
+            {Object.entries(factorLevels).map(([factorId, level]) => {
+              const factor = factors.find(f => f.id === factorId);
+              const factorName = factor ? factor.name : factorId;
+              return (
+                <div key={factorId} className="text-sm">
+                  <span className="text-blue-700">{factorName}:</span>{" "}
+                  <span className="font-semibold text-blue-900">Nível {level}</span>
+                </div>
+              );
+            })}
           </div>
         </div>
 
-        {/* Despesas Variáveis */}
-        <ExpenseCard
-          expenses={variableExpenses}
-          onAdd={handleAddExpense}
-          onRemove={handleRemoveExpense}
-          onUpdate={handleUpdateExpense}
-          placeholder="Ex: RRT, Transporte..."
-          label="Despesas Variáveis do Projeto (R$)"
-        />
-
         {/* Resultados Finais */}
         <div className="space-y-4">
+          {/* Preço de Projeto */}
           <div className="p-6 bg-calcularq-blue/10 rounded-lg border border-calcularq-blue/20">
             <div className="flex items-center justify-between mb-2">
               <span className="text-lg font-semibold text-calcularq-blue">Preço de Projeto:</span>
@@ -151,24 +168,101 @@ export default function FinalCalculation({
               </span>
             </div>
             <p className="text-xs text-slate-600 mt-2">
-              Hora Técnica Ajustada × Horas Estimadas
+              Hora Técnica Ajustada × Estimativa de horas de projeto
             </p>
           </div>
 
+          {/* Desconto Comercial */}
+          <div className="p-6 bg-amber-50 rounded-lg border border-amber-200">
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-slate-700 mb-3">
+                Desconto Comercial: {commercialDiscount}%
+              </label>
+              <input
+                type="range"
+                min="0"
+                max="100"
+                step="1"
+                value={commercialDiscount}
+                onChange={(e) => onCommercialDiscountChange(Number(e.target.value))}
+                className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-calcularq-orange"
+              />
+              <div className="flex justify-between text-xs text-slate-500 mt-1">
+                <span>0%</span>
+                <span>100%</span>
+              </div>
+            </div>
+            {commercialDiscount > 0 && (
+              <div className="mt-4 p-3 bg-amber-100 rounded-lg border border-amber-300">
+                <p className="text-sm text-amber-800 font-medium">
+                  Atenção: Com esse desconto, sua remuneração cai para R$ {adjustedHourlyRateWithDiscount.toLocaleString("pt-BR", { 
+                    minimumFractionDigits: 2, 
+                    maximumFractionDigits: 2 
+                  })} (hora técnica ajustada × {100 - commercialDiscount}%).
+                </p>
+              </div>
+            )}
+            {discountAmount > 0 && (
+              <div className="mt-2 text-sm text-slate-600">
+                Valor do desconto: R$ {discountAmount.toLocaleString("pt-BR", { 
+                  minimumFractionDigits: 2, 
+                  maximumFractionDigits: 2 
+                })}
+              </div>
+            )}
+          </div>
+
+          {/* Despesas Variáveis */}
+          <ExpenseCard
+            expenses={variableExpenses}
+            onAdd={handleAddExpense}
+            onRemove={handleRemoveExpense}
+            onUpdate={handleUpdateExpense}
+            placeholder="Ex: RRT, Transporte..."
+            label="Despesas Variáveis do Projeto (R$)"
+          />
+
+          {/* Preço de Venda Final */}
           <div className="p-6 bg-calcularq-orange/10 rounded-lg border-2 border-calcularq-orange">
             <div className="flex items-center justify-between">
               <span className="text-xl font-bold text-calcularq-orange">Preço de Venda Final:</span>
               <span className="text-3xl font-bold text-calcularq-orange">
-                R$ {finalSalePrice.toLocaleString("pt-BR", { 
+                R$ {finalSalePriceWithDiscount.toLocaleString("pt-BR", { 
                   minimumFractionDigits: 2, 
                   maximumFractionDigits: 2 
                 })}
               </span>
             </div>
             <p className="text-xs text-slate-600 mt-2">
-              Preço de Projeto + Despesas Variáveis
+              Preço de Projeto c/ desconto + Despesas Variáveis
             </p>
+            {discountAmount > 0 && (
+              <p className="text-xs text-amber-700 mt-1">
+                Valor do desconto: R$ {discountAmount.toLocaleString("pt-BR", { 
+                  minimumFractionDigits: 2, 
+                  maximumFractionDigits: 2 
+                })}
+              </p>
+            )}
           </div>
+
+          {/* Lucro (só se não usar hora manual) */}
+          {profit !== null && (
+            <div className="p-6 bg-green-50 rounded-lg border border-green-200">
+              <div className="flex items-center justify-between">
+                <span className="text-lg font-semibold text-green-700">Lucro:</span>
+                <span className={`text-2xl font-bold ${profit >= 0 ? 'text-green-700' : 'text-red-600'}`}>
+                  R$ {profit.toLocaleString("pt-BR", { 
+                    minimumFractionDigits: 2, 
+                    maximumFractionDigits: 2 
+                  })}
+                </span>
+              </div>
+              <p className="text-xs text-slate-600 mt-2">
+                Valor de projeto c/ desconto - ((Custos fixos mensais / Horas produtivas mensais) × Estimativa de horas de projeto)
+              </p>
+            </div>
+          )}
         </div>
 
         {/* Save Budget Button */}
@@ -185,6 +279,9 @@ export default function FinalCalculation({
               areaIntervals,
               selections: factorLevels,
               estimatedHours,
+              fixedExpenses,
+              productiveHours,
+              commercialDiscount,
               variableExpenses,
               results: {
                 globalComplexity,

@@ -23,6 +23,9 @@ export interface Budget {
     areaIntervals: Array<{ min: number; max: number | null; level: number }>;
     selections: Record<string, number>;
     estimatedHours: number;
+    fixedExpenses?: Array<{ id: string; name: string; value: number }>;
+    productiveHours?: number;
+    commercialDiscount?: number;
     variableExpenses: Array<{ id: string; name: string; value: number }>;
     results: {
       globalComplexity: number;

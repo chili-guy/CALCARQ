@@ -6,11 +6,15 @@ import { Button } from "@/components/ui/button";
 interface MinimumHourCalculatorProps {
   onCalculate: (minHourRate: number) => void;
   initialMinHourRate?: number;
+  onFixedExpensesChange?: (expenses: Expense[]) => void;
+  onProductiveHoursChange?: (hours: number) => void;
 }
 
 export default function MinimumHourCalculator({ 
   onCalculate, 
-  initialMinHourRate 
+  initialMinHourRate,
+  onFixedExpensesChange,
+  onProductiveHoursChange,
 }: MinimumHourCalculatorProps) {
   const [fixedExpenses, setFixedExpenses] = useState<Expense[]>([]);
   const [proLabore, setProLabore] = useState(0);
@@ -28,17 +32,21 @@ export default function MinimumHourCalculator({
   }, [fixedExpenses, proLabore, productiveHours, useManual, manualMinHourRate]);
 
   const handleAddExpense = (expense: Expense) => {
-    setFixedExpenses([...fixedExpenses, expense]);
+    const updated = [...fixedExpenses, expense];
+    setFixedExpenses(updated);
+    onFixedExpensesChange?.(updated);
   };
 
   const handleRemoveExpense = (id: string) => {
-    setFixedExpenses(fixedExpenses.filter((exp) => exp.id !== id));
+    const updated = fixedExpenses.filter((exp) => exp.id !== id);
+    setFixedExpenses(updated);
+    onFixedExpensesChange?.(updated);
   };
 
   const handleUpdateExpense = (id: string, updates: Partial<Expense>) => {
-    setFixedExpenses(
-      fixedExpenses.map((exp) => (exp.id === id ? { ...exp, ...updates } : exp))
-    );
+    const updated = fixedExpenses.map((exp) => (exp.id === id ? { ...exp, ...updates } : exp));
+    setFixedExpenses(updated);
+    onFixedExpensesChange?.(updated);
   };
 
   const handleCalculate = () => {
@@ -72,7 +80,7 @@ export default function MinimumHourCalculator({
             className="w-4 h-4 text-calcularq-blue border-slate-300 rounded focus:ring-calcularq-blue"
           />
           <label htmlFor="useManual" className="text-sm font-medium text-slate-700">
-            Digitar a hora mínima diretamente
+            Já sei a minha hora técnica mínima.
           </label>
         </div>
 
@@ -132,14 +140,18 @@ export default function MinimumHourCalculator({
             {/* Horas Produtivas Mensais */}
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-2">
-                Horas Produtivas Mensais (horas)
+                Horas Produtivas Mensais
               </label>
               <input
                 type="number"
                 min="0"
                 step="0.5"
-                value={productiveHours || ""}
-                onChange={(e) => setProductiveHours(Number(e.target.value))}
+                  value={productiveHours || ""}
+                  onChange={(e) => {
+                    const hours = Number(e.target.value);
+                    setProductiveHours(hours);
+                    onProductiveHoursChange?.(hours);
+                  }}
                 className="w-full px-3 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-calcularq-blue focus:border-calcularq-blue"
                 placeholder="0"
               />

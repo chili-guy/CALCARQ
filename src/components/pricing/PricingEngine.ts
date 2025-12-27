@@ -18,32 +18,32 @@ export interface AreaInterval {
 }
 
 export const DEFAULT_AREA_INTERVALS: AreaInterval[] = [
-  { min: 0, max: 50, level: 1 },
-  { min: 51, max: 100, level: 2 },
-  { min: 151, max: 500, level: 3 },
-  { min: 501, max: 1000, level: 4 },
-  { min: 1001, max: null, level: 5 },
+  { min: 0, max: 49, level: 1 },
+  { min: 50, max: 149, level: 2 },
+  { min: 150, max: 499, level: 3 },
+  { min: 500, max: 999, level: 4 },
+  { min: 1000, max: null, level: 5 },
 ];
 
 export const DEFAULT_FACTORS: Factor[] = [
   {
     id: "area",
     name: "Área de Projeto",
-    description: "Tamanho total do projeto em m²",
+    description: "Estimativa da metragem total de intervenção.",
     weight: 1.0,
     isArea: true,
     options: [
-      { value: 1, label: "Até 50m²", description: "Nível 1" },
-      { value: 2, label: "de 51 a 100m²", description: "Nível 2" },
-      { value: 3, label: "de 151 a 500m²", description: "Nível 3" },
-      { value: 4, label: "de 501 a 1.000m²", description: "Nível 4" },
-      { value: 5, label: "Acima de 1.000m²", description: "Nível 5" },
+      { value: 1, label: "Até 49m²", description: "Nível 1" },
+      { value: 2, label: "50 a 149m²", description: "Nível 2" },
+      { value: 3, label: "150 a 499m²", description: "Nível 3" },
+      { value: 4, label: "500 a 999m²", description: "Nível 4" },
+      { value: 5, label: "Acima de 1000m²", description: "Nível 5" },
     ],
   },
   {
     id: "stage",
     name: "Etapa de Projeto",
-    description: "Fase atual do desenvolvimento",
+    description: "Define até qual fase do ciclo de desenvolvimento o arquiteto desenvolverá o projeto.",
     weight: 1.0,
     options: [
       { value: 1, label: "Consultoria", description: "Nível 1" },
@@ -56,7 +56,7 @@ export const DEFAULT_FACTORS: Factor[] = [
   {
     id: "detail",
     name: "Nível de Detalhamento",
-    description: "Grau de especificação técnica",
+    description: "Mede a quantidade de desenhos e o esforço criativo exigido.",
     weight: 1.0,
     options: [
       { value: 1, label: "Mínimo", description: "Nível 1" },
@@ -69,7 +69,7 @@ export const DEFAULT_FACTORS: Factor[] = [
   {
     id: "technical",
     name: "Exigência Técnica",
-    description: "Complexidade técnica do projeto",
+    description: "Define a rigidez das normas, leis e o volume de estudo técnico necessário.",
     weight: 1.0,
     options: [
       { value: 1, label: "Mínima", description: "Nível 1" },
@@ -82,7 +82,7 @@ export const DEFAULT_FACTORS: Factor[] = [
   {
     id: "bureaucratic",
     name: "Exigência Burocrática",
-    description: "Complexidade de aprovações e licenças",
+    description: "Mede a carga administrativa e a gestão de aprovações em órgãos públicos.",
     weight: 1.0,
     options: [
       { value: 1, label: "Mínima", description: "Nível 1" },
@@ -95,7 +95,7 @@ export const DEFAULT_FACTORS: Factor[] = [
   {
     id: "monitoring",
     name: "Dedicação à Obra",
-    description: "Nível de supervisão necessário",
+    description: "Frequência de visitas e nível de responsabilidade no canteiro.",
     weight: 1.0,
     options: [
       { value: 1, label: "Levantamento", description: "Nível 1" },

@@ -71,3 +71,4 @@ Se você não tem um produto/preço criado no Stripe:
 
 **Última atualização**: Dezembro 2025
 
+

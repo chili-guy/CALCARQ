@@ -21,7 +21,7 @@ export default function BudgetsHistory() {
   }, [user]);
 
   const handleDelete = (budgetId: string) => {
-    if (confirm("Tem certeza que deseja excluir este orçamento?")) {
+    if (confirm("Tem certeza que deseja excluir este cálculo?")) {
       if (user) {
         db.deleteBudget(budgetId, user.id);
         setBudgets(budgets.filter(b => b.id !== budgetId));
@@ -33,7 +33,7 @@ export default function BudgetsHistory() {
     return (
       <div className="min-h-screen bg-slate-50 flex items-center justify-center">
         <div className="text-center">
-          <p className="text-slate-600 mb-4">Você precisa estar logado para ver seus orçamentos</p>
+          <p className="text-slate-600 mb-4">Você precisa estar logado para ver seus cálculos</p>
           <Link to={createPageUrl("Login")}>
             <Button className="bg-calcularq-blue hover:bg-[#002366] text-white">
               Fazer Login
@@ -60,17 +60,17 @@ export default function BudgetsHistory() {
               </div>
               <div>
                 <h1 className="text-3xl font-bold text-calcularq-blue">
-                  Meus Orçamentos
+                  Meus Cálculos
                 </h1>
                 <p className="text-slate-600">
-                  Histórico de todos os seus orçamentos salvos
+                  Acesse aqui os cálculos que você salvou no sistema.
                 </p>
               </div>
             </div>
             <Link to={createPageUrl("Calculator")}>
               <Button className="bg-calcularq-blue hover:bg-[#002366] text-white">
                 <Plus className="w-4 h-4 mr-2" />
-                Novo Orçamento
+                Novo Cálculo
               </Button>
             </Link>
           </div>
@@ -85,15 +85,15 @@ export default function BudgetsHistory() {
           >
             <History className="w-16 h-16 text-slate-300 mx-auto mb-4" />
             <h3 className="text-xl font-semibold text-slate-700 mb-2">
-              Nenhum orçamento salvo ainda
+              Nenhum cálculo salvo ainda
             </h3>
             <p className="text-slate-500 mb-6">
-              Comece criando um novo orçamento na calculadora
+              Acesse aqui os cálculos que você salvou no sistema.
             </p>
             <Link to={createPageUrl("Calculator")}>
               <Button className="bg-calcularq-blue hover:bg-[#002366] text-white">
                 <Plus className="w-4 h-4 mr-2" />
-                Criar Primeiro Orçamento
+                Criar Primeiro Cálculo
               </Button>
             </Link>
           </motion.div>
@@ -110,7 +110,7 @@ export default function BudgetsHistory() {
                 <div className="flex items-start justify-between mb-4">
                   <div className="flex-1">
                     <h3 className="font-bold text-calcularq-blue text-lg mb-1">
-                      {budget.name || "Orçamento sem nome"}
+                      {budget.name || "Cálculo sem nome"}
                     </h3>
                     {budget.clientName && (
                       <p className="text-sm text-slate-600">Cliente: {budget.clientName}</p>

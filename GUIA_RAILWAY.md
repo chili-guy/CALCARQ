@@ -159,11 +159,11 @@ https://seu-projeto.up.railway.app/api/webhook/stripe
 
 ### 5.2 Configurar no Stripe Dashboard
 
-1. Acesse: https://dashboard.stripe.com/webhooks
+1. Acesse: https://calcarq-production-e4d3.up.railway.app/api/webhook/stripe
 2. Clique em **"Add endpoint"**
 3. Cole a URL do webhook:
    ```
-   https://seu-projeto.up.railway.app/api/webhook/stripe
+   calcarq-production-e4d3.up.railway.app/api/webhook/stripe
    ```
 4. Selecione os eventos:
    - ✅ `checkout.session.completed`

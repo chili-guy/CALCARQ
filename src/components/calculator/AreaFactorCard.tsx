@@ -62,7 +62,7 @@ export default function AreaFactorCard({
             </span>
           )}
         </div>
-        <p className="text-sm text-slate-500">Tamanho total do projeto em m²</p>
+        <p className="text-sm text-slate-500">Estimativa da metragem total de intervenção.</p>
       </div>
 
       {/* Input de Área */}

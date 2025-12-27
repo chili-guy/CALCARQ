@@ -15,7 +15,7 @@ export default function Manual() {
             <BookOpen className="w-8 h-8 text-white" />
           </div>
           <h1 className="text-4xl font-bold text-calcularq-blue mb-4">
-            Manual de Instruções – Calcularq
+            Manual de Instruções
           </h1>
           <p className="text-lg text-slate-600 leading-relaxed text-justify">
             Bem-vindo à Calcularq, uma calculadora que utiliza um algoritmo de precificação por
@@ -24,7 +24,7 @@ export default function Manual() {
             trabalho com o nível de complexidade de cada projeto.
           </p>
           <p className="text-lg text-slate-700 font-semibold mt-4">
-            Siga o roteiro abaixo para entender o sistema e realizar seus orçamentos:
+            Siga o roteiro abaixo para entender o sistema e realizar seus cálculos:
           </p>
         </motion.div>
 

@@ -1,7 +1,7 @@
 import { useState, useMemo, useCallback, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Info } from "lucide-react";
-import { Link, useSearchParams } from "react-router-dom";
+import { useSearchParams } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { db } from "@/lib/database";
 
@@ -29,6 +29,8 @@ export default function Calculator() {
 
   // Seção 1: Hora Técnica Mínima
   const [minHourlyRate, setMinHourlyRate] = useState<number | null>(null);
+  const [fixedExpenses, setFixedExpenses] = useState<Array<{ id: string; name: string; value: number }>>([]);
+  const [productiveHours, setProductiveHours] = useState(0);
   
   // Seção 2: Configurações
   const [factors, setFactors] = useState<Factor[]>(DEFAULT_FACTORS);
@@ -40,9 +42,10 @@ export default function Calculator() {
   
   // Seção 4: Cálculo Final
   const [estimatedHours, setEstimatedHours] = useState(0);
+  const [commercialDiscount, setCommercialDiscount] = useState(0); // 0 a 100 (%)
   const [variableExpenses, setVariableExpenses] = useState<Array<{ id: string; name: string; value: number }>>([]);
 
-  // Carregar orçamento salvo se houver ID na URL
+  // Carregar cálculo salvo se houver ID na URL
   useEffect(() => {
     if (budgetId && user) {
       const budget = db.getBudgetById(budgetId, user.id);
@@ -59,6 +62,15 @@ export default function Calculator() {
         setSelections(budget.data.selections);
         setEstimatedHours(budget.data.estimatedHours);
         setVariableExpenses(budget.data.variableExpenses);
+        if (budget.data.commercialDiscount !== undefined) {
+          setCommercialDiscount(budget.data.commercialDiscount);
+        }
+        if (budget.data.fixedExpenses) {
+          setFixedExpenses(budget.data.fixedExpenses);
+        }
+        if (budget.data.productiveHours !== undefined) {
+          setProductiveHours(budget.data.productiveHours);
+        }
         
         // Encontrar área do fator área
         const areaFactor = budget.data.factors.find(f => f.id === "area");
@@ -155,6 +167,8 @@ export default function Calculator() {
             <MinimumHourCalculator
               onCalculate={handleMinHourRateCalculate}
               initialMinHourRate={minHourlyRate || undefined}
+              onFixedExpensesChange={setFixedExpenses}
+              onProductiveHoursChange={setProductiveHours}
             />
           </motion.section>
 
@@ -200,9 +214,14 @@ export default function Calculator() {
                 <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
                   <p className="text-sm text-blue-700">
                     <strong>Precisa de apoio na classificação?</strong> Para entender os critérios técnicos e os exemplos práticos por trás de cada Fator e Valor,{" "}
-                    <Link to={createPageUrl("Manual")} className="underline font-semibold">
-                      acesse a Aba de Instruções
-                    </Link>
+                    <a 
+                      href={createPageUrl("Manual")} 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="underline font-semibold"
+                    >
+                      acesse o manual de instruções
+                    </a>
                     .
                   </p>
                 </div>
@@ -246,6 +265,8 @@ export default function Calculator() {
                 adjustedHourlyRate={results.adjustedHourlyRate}
                 estimatedHours={estimatedHours}
                 onEstimatedHoursChange={setEstimatedHours}
+                commercialDiscount={commercialDiscount}
+                onCommercialDiscountChange={setCommercialDiscount}
                 variableExpenses={variableExpenses}
                 onVariableExpensesChange={setVariableExpenses}
                 projectPrice={results.projectPrice}
@@ -253,6 +274,8 @@ export default function Calculator() {
                 factorLevels={selections}
                 factors={factors}
                 areaIntervals={areaIntervals}
+                fixedExpenses={fixedExpenses}
+                productiveHours={productiveHours}
               />
             </motion.section>
           )}

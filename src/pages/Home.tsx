@@ -46,7 +46,7 @@ export default function Home() {
     {
       icon: Zap,
       title: "Agilidade na Entrega",
-      description: "Reduza o tempo de elaboração de propostas e envie orçamentos precisos com rapidez."
+      description: "Reduza o tempo de elaboração de propostas e envie cálculos precisos com rapidez."
     }
   ];
 
@@ -91,7 +91,7 @@ export default function Home() {
                   </h1>
 
                   <p className="text-lg text-slate-700 mb-8 leading-relaxed text-center">
-                    Precifique seus projetos de arquitetura. A Calcularq é uma ferramenta precisa para alinhar seus orçamentos à dedicação que cada projeto exige.
+                    Precifique seus projetos de arquitetura. A Calcularq é uma ferramenta precisa para alinhar seus cálculos à dedicação que cada projeto exige.
                   </p>
 
                   {/* Rating Widget */}
