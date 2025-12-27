@@ -86,7 +86,7 @@ export default function Home() {
                 >
                   {/* Logo removido do banner conforme feedback */}
 
-                  <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-calcularq-blue mb-6 leading-tight">
+                  <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-calcularq-blue mb-6 leading-tight text-center">
                     SUA CALCULADORA DE PRECIFICAÇÃO POR COMPLEXIDADE
                   </h1>
 
