@@ -84,20 +84,13 @@ export default function Home() {
                   animate={{ opacity: 1, y: 0 }}
                   className="bg-white rounded-2xl p-6 md:p-8 lg:p-10 shadow-2xl"
                 >
-                  {/* Logo */}
-                  <div className="mb-6 flex items-center gap-3">
-                    <img 
-                      src="/logo-calcularq.png" 
-                      alt="Calcularq" 
-                      className="h-12 w-auto object-contain"
-                    />
-                  </div>
+                  {/* Logo removido do banner conforme feedback */}
 
                   <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-calcularq-blue mb-6 leading-tight">
                     SUA CALCULADORA DE PRECIFICAÇÃO POR COMPLEXIDADE
                   </h1>
 
-                  <p className="text-lg text-slate-700 mb-8 leading-relaxed">
+                  <p className="text-lg text-slate-700 mb-8 leading-relaxed text-center">
                     Precifique seus projetos de arquitetura. A Calcularq é uma ferramenta precisa para alinhar seus orçamentos à dedicação que cada projeto exige.
                   </p>
 
@@ -119,9 +112,10 @@ export default function Home() {
                   >
                     <Button 
                       size="lg" 
-                      className="w-full bg-calcularq-orange hover:bg-orange-600 text-white px-8 py-6 text-lg rounded-xl shadow-lg hover:shadow-xl transition-all font-semibold"
+                      className="w-full bg-calcularq-orange hover:bg-orange-600 text-white px-8 py-6 text-lg rounded-xl shadow-lg hover:shadow-xl transition-all font-semibold sm:text-lg text-base"
                     >
-                      Acesse agora por apenas R$19,90
+                      <span className="hidden sm:inline">Acesse agora por apenas R$19,90</span>
+                      <span className="sm:hidden">Apenas R$19,90</span>
                     </Button>
                   </Link>
 
@@ -180,7 +174,7 @@ export default function Home() {
                 <h2 className="text-2xl md:text-3xl font-bold text-white mb-4">
                   Fatores de Complexidade
                 </h2>
-                <p className="text-slate-300 mb-6">
+                <p className="text-slate-300 mb-6 text-center">
                   Nossa calculadora considera 6 fatores essenciais para 
                   determinar a complexidade real do seu projeto.
                 </p>

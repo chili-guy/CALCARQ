@@ -6,6 +6,8 @@ import { api } from "@/lib/api";
 import { CheckCircle, XCircle, Loader } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { createPageUrl } from "@/utils";
+import LegalModal from "@/components/LegalModal";
+import { termsContent, privacyContent } from "@/lib/legalContent";
 
 // Usar API para criar sessão (garante client_reference_id)
 // Fallback para link direto se API não estiver disponível
@@ -22,6 +24,9 @@ export default function Payment() {
   const [pollAttempts, setPollAttempts] = useState(0);
   const pollIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const checkoutWindowRef = useRef<Window | null>(null);
+  const [acceptedTerms, setAcceptedTerms] = useState(false);
+  const [showTerms, setShowTerms] = useState(false);
+  const [showPrivacy, setShowPrivacy] = useState(false);
 
   // Verificar se já pagou
   useEffect(() => {
@@ -139,6 +144,11 @@ export default function Payment() {
   const handleStripeCheckout = async () => {
     if (!user) {
       navigate(createPageUrl("Login"), { replace: true });
+      return;
+    }
+
+    if (!acceptedTerms) {
+      alert("Por favor, aceite os Termos de Uso e a Política de Privacidade para continuar.");
       return;
     }
 
@@ -357,13 +367,13 @@ export default function Payment() {
         >
           <div className="text-center mb-8">
             <div className="w-16 h-16 rounded-2xl bg-calcularq-blue/10 flex items-center justify-center mx-auto mb-4">
-              <img src="/logo.png" alt="Calcularq" className="h-10 w-auto object-contain" />
+              <img src="/favicon.png" alt="Calcularq" className="h-10 w-10 object-contain" />
             </div>
             <h1 className="text-3xl font-bold text-calcularq-blue mb-4">
-              Acesso à Calculadora
+              Acesso à Calcularq
             </h1>
             <p className="text-lg text-slate-600">
-              Para acessar a calculadora Calcularq, é necessário realizar o pagamento único.
+              Para acessar a Calcularq, é necessário fazer um pagamento único de <strong className="text-calcularq-blue">R$19,90</strong>.
             </p>
           </div>
 
@@ -378,24 +388,50 @@ export default function Payment() {
               </li>
               <li className="flex items-start gap-3">
                 <CheckCircle className="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" />
-                <span>Salvamento ilimitado de orçamentos</span>
+                <span>Cálculos de preço ilimitados</span>
               </li>
               <li className="flex items-start gap-3">
                 <CheckCircle className="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" />
-                <span>Histórico completo de seus projetos</span>
-              </li>
-              <li className="flex items-start gap-3">
-                <CheckCircle className="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" />
-                <span>Acesso permanente à sua conta</span>
+                <span>Histórico organizado dos seus cálculos</span>
               </li>
             </ul>
           </div>
 
           <div className="text-center">
+            {/* Checkbox de aceite de termos */}
+            <div className="mb-6 flex items-start justify-center gap-3 text-sm text-slate-700">
+              <input
+                type="checkbox"
+                id="acceptTerms"
+                checked={acceptedTerms}
+                onChange={(e) => setAcceptedTerms(e.target.checked)}
+                className="mt-1 w-4 h-4 text-calcularq-blue border-slate-300 rounded focus:ring-calcularq-blue"
+              />
+              <label htmlFor="acceptTerms" className="cursor-pointer">
+                Li e concordo com os{" "}
+                <button
+                  type="button"
+                  onClick={() => setShowTerms(true)}
+                  className="text-calcularq-blue hover:underline font-semibold"
+                >
+                  Termos de Uso
+                </button>
+                {" "}e a{" "}
+                <button
+                  type="button"
+                  onClick={() => setShowPrivacy(true)}
+                  className="text-calcularq-blue hover:underline font-semibold"
+                >
+                  Política de Privacidade
+                </button>
+                .
+              </label>
+            </div>
+
             <Button
               onClick={handleStripeCheckout}
-              disabled={isProcessing}
-              className="bg-calcularq-orange hover:bg-[#e69400] text-white px-8 py-6 text-lg font-semibold"
+              disabled={isProcessing || !acceptedTerms}
+              className="bg-calcularq-orange hover:bg-[#e69400] text-white px-8 py-6 text-lg font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isProcessing ? (
                 <>
@@ -403,7 +439,7 @@ export default function Payment() {
                   Processando...
                 </>
               ) : (
-                "Realizar Pagamento"
+                "Realizar o pagamento"
               )}
             </Button>
             <p className="text-sm text-slate-500 mt-4">
@@ -418,6 +454,21 @@ export default function Payment() {
           </div>
         </motion.div>
       </div>
+
+      {/* Legal Modals */}
+      <LegalModal
+        isOpen={showTerms}
+        onClose={() => setShowTerms(false)}
+        title="Termos e Condições Gerais de Uso"
+        content={termsContent}
+      />
+      
+      <LegalModal
+        isOpen={showPrivacy}
+        onClose={() => setShowPrivacy(false)}
+        title="Política de Privacidade e Proteção de Dados Pessoais"
+        content={privacyContent}
+      />
     </div>
   );
 }

@@ -1,10 +1,11 @@
 import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { createPageUrl } from "@/utils";
-import { Calculator, Home, FileText, Shield, BookOpen, LogIn, LogOut, User, History } from "lucide-react";
+import { Calculator, Home, BookOpen, LogIn, LogOut, User, History } from "lucide-react";
 import Footer from "./Footer";
 import LegalModal from "./LegalModal";
 import { useAuth } from "@/contexts/AuthContext";
+import { termsContent, privacyContent } from "@/lib/legalContent";
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -19,7 +20,6 @@ export default function Layout({ children }: LayoutProps) {
   const navigation = [
     { name: "Home", page: "Home", icon: Home },
     { name: "Calculadora", page: "Calculator", icon: Calculator },
-    { name: "Manual", page: "Manual", icon: BookOpen },
   ];
 
   // Determina a página atual baseado na rota
@@ -38,10 +38,6 @@ export default function Layout({ children }: LayoutProps) {
   };
 
   const currentPageName = getCurrentPageName();
-
-  // Conteúdo dos Termos e Condições
-  const termsContent = `
-    <div class="space-y-6">
       <div>
         <h2 class="text-2xl font-bold text-calcularq-blue mb-4">TERMOS E CONDIÇÕES GERAIS DE USO E LICENCIAMENTO DE SOFTWARE</h2>
         <p class="text-sm text-slate-500 mb-6">Versão 1.0 | Data de Vigência: [Inserir Data de Lançamento]</p>
@@ -248,240 +244,7 @@ export default function Layout({ children }: LayoutProps) {
           Código de Defesa do Consumidor.
         </p>
       </div>
-    </div>
-  `;
-
-  // Conteúdo da Política de Privacidade
-  const privacyContent = `
-    <div class="space-y-6">
-      <div>
-        <h2 class="text-2xl font-bold text-calcularq-blue mb-4">POLÍTICA DE PRIVACIDADE E PROTEÇÃO DE DADOS PESSOAIS</h2>
-        <p class="text-sm text-slate-500 mb-6">Versão 1.0 | Data de Vigência: [Inserir Data de Lançamento]</p>
-        <p class="text-slate-700 mb-4">
-          O presente Instrumento de Política de Privacidade ("Política") tem por escopo disciplinar as
-          condições de tratamento de dados pessoais no âmbito da utilização da plataforma
-          CALCULARQ, de titularidade de PEDRO AFONSO MAIA PIRES, pessoa física, doravante
-          denominado CONTROLADOR.
-        </p>
-        <p class="text-slate-700 mb-6">
-          A presente Política foi elaborada em estrita consonância com a Constituição Federal
-          Brasileira, o Código de Defesa do Consumidor (Lei nº 8.078/1990), o Marco Civil da Internet
-          (Lei nº 12.965/2014) e, precipuamente, a Lei Geral de Proteção de Dados Pessoais (Lei nº
-          13.709/2018 – "LGPD").
-        </p>
-      </div>
-
-      <div>
-        <h3 class="text-xl font-bold text-calcularq-blue mb-3">1. DAS DEFINIÇÕES E CONCEITOS</h3>
-        <p class="text-slate-700 mb-3">
-          Para a correta interpretação deste instrumento, adotam-se as definições legais
-          estabelecidas no Artigo 5º da LGPD.
-        </p>
-        <ul class="space-y-2 text-slate-700 list-disc list-inside">
-          <li>Considera-se <strong>Dado Pessoal</strong> toda informação relacionada a pessoa natural identificada ou identificável.</li>
-          <li>Considera-se <strong>Tratamento</strong> toda operação realizada com dados pessoais, como coleta, produção, recepção, classificação, utilização, acesso, reprodução, transmissão, distribuição, processamento, arquivamento, armazenamento, eliminação, avaliação ou controle da informação.</li>
-          <li>Considera-se <strong>Titular</strong> a pessoa natural a quem se referem os dados pessoais que são objeto de tratamento.</li>
-          <li>Considera-se <strong>Controlador</strong> a pessoa natural ou jurídica a quem competem as decisões referentes ao tratamento de dados pessoais.</li>
-          <li>Considera-se <strong>Operador</strong> a pessoa natural ou jurídica que realiza o tratamento de dados pessoais em nome do controlador.</li>
-        </ul>
-      </div>
-
-      <div>
-        <h3 class="text-xl font-bold text-calcularq-blue mb-3">2. DA QUALIFICAÇÃO DAS PARTES E RESPONSABILIDADES (DATA CONTROLLERSHIP)</h3>
-        <p class="text-slate-700 mb-3">
-          Reconhece-se, para os devidos fins de direito, a distinção dos papéis no tratamento de
-          dados, conforme a natureza da informação processada pela plataforma.
-        </p>
-        <p class="text-slate-700 mb-3">
-          No que tange aos dados de cadastro, faturamento e acesso do USUÁRIO (licenciado), o
-          CALCULARQ atua como CONTROLADOR, determinando a finalidade e os meios de
-          tratamento.
-        </p>
-        <p class="text-slate-700 mb-3">
-          Diversamente, no que tange aos dados inseridos pelo USUÁRIO na ferramenta de
-          "Histórico de Orçamentos" (ex: nomes de clientes finais, endereços de obras, dados de
-          terceiros), o USUÁRIO figura como único e exclusivo CONTROLADOR.
-        </p>
-        <p class="text-slate-700">
-          Nesta segunda hipótese, o CALCULARQ atua meramente como OPERADOR de
-          infraestrutura. A responsabilidade do CALCULARQ limita-se à segurança do
-          armazenamento e ao cumprimento das instruções lícitas do USUÁRIO, nos termos do Art.
-          42 da LGPD, não respondendo pela legalidade da coleta original desses dados realizada
-          pelo USUÁRIO, salvo em caso de comprovada negligência quanto às normas de segurança
-          da informação.
-        </p>
-      </div>
-
-      <div>
-        <h3 class="text-xl font-bold text-calcularq-blue mb-3">3. DA COLETA E ESCOPO DO TRATAMENTO</h3>
-        <p class="text-slate-700 mb-3">
-          Os dados pessoais serão coletados e tratados apenas quando estritamente necessários
-          para a execução do contrato de licença de uso, nas seguintes modalidades:
-        </p>
-        <div class="space-y-4">
-          <div>
-            <p class="font-semibold text-slate-900 mb-2">3.1. Dados de Identificação Digital e Acesso</p>
-            <p class="text-slate-700 mb-2">
-              Serão tratados o endereço de correio eletrônico (e-mail), as credenciais de acesso (senha
-              submetida a hashing criptográfico) e os registros de conexão (Endereço IP, User-Agent,
-              data e hora).
-            </p>
-            <p class="text-slate-700 mb-2">
-              Na hipótese de o USUÁRIO optar pelo acesso via Login Social (integração com Google,
-              Facebook ou similares), o CONTROLADOR coletará os dados públicos de perfil autorizados
-              pelo USUÁRIO na plataforma de origem, limitando-se estritamente ao necessário para a
-              identificação e criação da conta (Nome, E-mail e Foto de Perfil).
-            </p>
-            <p class="text-slate-700">
-              O tratamento destes dados fundamenta-se no cumprimento de obrigação legal (Art. 7º, II,
-              LGPD c/c Art. 15, Lei 12.965/14) e na necessidade para a execução de contrato (Art. 7º, V,
-              LGPD).
-            </p>
-          </div>
-          <div>
-            <p class="font-semibold text-slate-900 mb-2">3.2. Dados Financeiros e de Transação</p>
-            <p class="text-slate-700 mb-2">
-              Serão tratados o histórico de pagamentos, os identificadores de transação e o status da
-              licença adquirida.
-            </p>
-            <p class="text-slate-700">
-              O CONTROLADOR declara expressamente não armazenar, processar ou deter acesso aos
-              dados sensíveis de pagamento, tais como número de cartão de crédito e código CVV. Tais
-              dados são processados exclusivamente pela gateway de pagamentos Stripe Payments,
-              em ambiente certificado PCI-DSS (Payment Card Industry Data Security Standard).
-            </p>
-          </div>
-          <div>
-            <p class="font-semibold text-slate-900 mb-2">3.3. Dados de Input do Usuário (Histórico de Orçamentos)</p>
-            <p class="text-slate-700 mb-2">
-              Serão armazenados os resultados dos cálculos e os dados de identificação dos projetos
-              (ex: Nome do Cliente/Projeto, valores finais) inseridos discricionariamente pelo USUÁRIO.
-            </p>
-            <p class="text-slate-700 mb-2">
-              A finalidade deste armazenamento é viabilizar a persistência de dados e a funcionalidade
-              de memória de cálculo da ferramenta, permitindo consulta futura pelo USUÁRIO.
-            </p>
-            <p class="text-slate-700">
-              É vedada a utilização destes dados para fins de inteligência de mercado, publicidade ou
-              cessão a terceiros. O acesso a tais informações é restrito logicamente ao ID do USUÁRIO.
-            </p>
-          </div>
-        </div>
-      </div>
-
-      <div>
-        <h3 class="text-xl font-bold text-calcularq-blue mb-3">4. DO COMPARTILHAMENTO E TRANSFERÊNCIA INTERNACIONAL</h3>
-        <p class="text-slate-700 mb-3">
-          O CONTROLADOR declara que não comercializa dados pessoais. O compartilhamento
-          limita-se aos provedores de infraestrutura tecnológica essenciais, configurando-se
-          Transferência Internacional de Dados (Art. 33, LGPD), visto que os servidores podem estar
-          localizados fora do território nacional.
-        </p>
-        <p class="text-slate-700 mb-3">
-          Os dados são hospedados na infraestrutura de nuvem da Oracle Corporation (Oracle
-          Cloud Infrastructure), que atua como provedora de serviços de computação e
-          armazenamento de banco de dados. A transferência baseia-se em cláusulas contratuais
-          padrão e protocolos globais de segurança.
-        </p>
-        <p class="text-slate-700 mb-3">
-          Os dados de autenticação via Login Social são compartilhados com os respectivos
-          provedores de identidade (ex: Google LLC, Meta Platforms Inc.) estritamente para fins de
-          verificação de credenciais.
-        </p>
-        <p class="text-slate-700">
-          Os dados financeiros são processados pela Stripe Inc. (Global), para fins exclusivos de
-          processamento de pagamentos e prevenção a fraudes financeiras.
-        </p>
-      </div>
-
-      <div>
-        <h3 class="text-xl font-bold text-calcularq-blue mb-3">5. DA SEGURANÇA DA INFORMAÇÃO</h3>
-        <p class="text-slate-700 mb-3">
-          O CONTROLADOR emprega medidas técnicas e administrativas aptas a proteger os dados
-          pessoais de acessos não autorizados e de situações acidentais ou ilícitas de destruição,
-          perda, alteração, comunicação ou difusão.
-        </p>
-        <p class="text-slate-700 mb-3">
-          As comunicações entre o dispositivo do USUÁRIO e os servidores são protegidas por
-          criptografia em trânsito, através da utilização de protocolo SSL/TLS (Secure Sockets Layer).
-        </p>
-        <p class="text-slate-700 mb-3">
-          O ambiente de servidor é configurado com controles de acesso restritos e medidas de
-          segurança perimetral, garantindo que os dados armazenados por um USUÁRIO sejam
-          tecnicamente inacessíveis a outros usuários da plataforma.
-        </p>
-        <p class="text-slate-700">
-          A coleta de dados obedece ao princípio da minimização, restringindo-se estritamente ao
-          necessário para a finalidade proposta.
-        </p>
-      </div>
-
-      <div>
-        <h3 class="text-xl font-bold text-calcularq-blue mb-3">6. DOS DIREITOS DO TITULAR</h3>
-        <p class="text-slate-700 mb-3">
-          Em conformidade com o Art. 18 da LGPD, o USUÁRIO poderá requerer, a qualquer
-          momento e mediante requisição expressa, a confirmação da existência de tratamento e o
-          acesso aos seus dados pessoais.
-        </p>
-        <p class="text-slate-700 mb-3">
-          É assegurado ao USUÁRIO o direito de solicitar a correção de dados incompletos, inexatos
-          ou desatualizados constantes em seu cadastro, bem como a portabilidade de seus dados a
-          outro fornecedor, observados os segredos comercial e industrial.
-        </p>
-        <p class="text-slate-700 mb-3">
-          O USUÁRIO poderá requerer a eliminação dos dados pessoais tratados, excetuadas as
-          hipóteses de guarda obrigatória previstas no art. 16 da Lei.
-        </p>
-        <p class="text-slate-700">
-          Quando a base legal para o tratamento for o consentimento, a revogação poderá ser
-          exercida a qualquer momento mediante manifestação expressa do titular, ratificados os
-          tratamentos realizados sob amparo do consentimento anteriormente manifestado.
-        </p>
-      </div>
-
-      <div>
-        <h3 class="text-xl font-bold text-calcularq-blue mb-3">7. DO ENCARREGADO E CANAL DE CONTATO</h3>
-        <p class="text-slate-700 mb-3">
-          Para o exercício de quaisquer direitos previstos nesta Política ou na legislação aplicável,
-          bem como para o esclarecimento de dúvidas referentes ao tratamento de dados, o Titular
-          deverá entrar em contato através do canal oficial:
-        </p>
-        <p class="text-slate-700 font-semibold">
-          E-mail: atendimento.calcularq@gmail.com
-        </p>
-        <p class="text-slate-700 mt-3">
-          As solicitações serão recebidas, analisadas e respondidas dentro dos prazos legais
-          estabelecidos pela Autoridade Nacional de Proteção de Dados (ANPD).
-        </p>
-      </div>
-
-      <div>
-        <h3 class="text-xl font-bold text-calcularq-blue mb-3">8. DO TÉRMINO DO TRATAMENTO E RETENÇÃO</h3>
-        <p class="text-slate-700 mb-3">
-          Os dados pessoais serão mantidos enquanto perdurar a relação contratual.
-        </p>
-        <p class="text-slate-700">
-          Após o encerramento da conta, seja por solicitação do USUÁRIO ou por descontinuidade do
-          serviço, os dados serão excluídos definitivamente, ressalvada a conservação para
-          cumprimento de obrigação legal ou regulatória (ex: guarda de registros de acesso por 6
-          meses e dados fiscais por 5 anos).
-        </p>
-      </div>
-
-      <div>
-        <h3 class="text-xl font-bold text-calcularq-blue mb-3">9. DO FORO E LEGISLAÇÃO APLICÁVEL</h3>
-        <p class="text-slate-700 mb-3">
-          Esta Política será regida, interpretada e executada de acordo com as Leis da República
-          Federativa do Brasil, especialmente a Lei nº 13.709/2018.
-        </p>
-        <p class="text-slate-700">
-          Fica assegurado ao titular o direito de ajuizar eventual demanda no foro de seu domicílio,
-          nos termos do Código de Defesa do Consumidor e da legislação aplicável, com renúncia
-          expressa a qualquer outro.
-        </p>
-      </div>
-    </div>
-  `;
+  const currentPageName = getCurrentPageName();
 
   return (
     <div className="min-h-screen bg-white">
@@ -489,15 +252,15 @@ export default function Layout({ children }: LayoutProps) {
       <nav className="fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-lg border-b border-slate-200 shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
-            {/* Logo - Apenas ícone */}
+            {/* Logo - Logo completa em vez de logomarca */}
             <Link 
               to={createPageUrl("Home")}
               className="flex items-center"
             >
               <img 
-                src="/favicon.png" 
+                src="/logo-calcularq.png" 
                 alt="Calcularq" 
-                className="h-10 w-10 object-contain"
+                className="h-10 w-auto object-contain"
               />
             </Link>
 
@@ -526,12 +289,26 @@ export default function Layout({ children }: LayoutProps) {
               {/* User Menu */}
               {user ? (
                 <>
+                  {/* Manual - só para usuários que pagaram */}
+                  {user.hasPaid && (
+                    <Link
+                      to={createPageUrl("Manual")}
+                      className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                        currentPageName === "Manual"
+                          ? "bg-calcularq-blue text-white"
+                          : "text-slate-600 hover:bg-slate-100 hover:text-calcularq-blue"
+                      }`}
+                    >
+                      <BookOpen className="w-4 h-4" />
+                      <span className="hidden sm:inline">Manual</span>
+                    </Link>
+                  )}
                   <Link
                     to="/budgets"
                     className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium text-slate-600 hover:bg-slate-100 hover:text-calcularq-blue transition-all"
                   >
                     <History className="w-4 h-4" />
-                    <span className="hidden sm:inline">Meus Orçamentos</span>
+                    <span className="hidden sm:inline">Meus Cálculos</span>
                   </Link>
                   <div className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium text-slate-600">
                     <User className="w-4 h-4" />
@@ -554,23 +331,6 @@ export default function Layout({ children }: LayoutProps) {
                   <span className="hidden sm:inline">Entrar</span>
                 </Link>
               )}
-
-              {/* Legal Links */}
-              <button
-                onClick={() => setShowTerms(true)}
-                className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium text-slate-600 hover:bg-slate-100 hover:text-calcularq-blue transition-all"
-              >
-                <FileText className="w-4 h-4" />
-                <span className="hidden sm:inline">Termos</span>
-              </button>
-              
-              <button
-                onClick={() => setShowPrivacy(true)}
-                className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium text-slate-600 hover:bg-slate-100 hover:text-calcularq-blue transition-all"
-              >
-                <Shield className="w-4 h-4" />
-                <span className="hidden sm:inline">Privacidade</span>
-              </button>
             </div>
           </div>
         </div>
