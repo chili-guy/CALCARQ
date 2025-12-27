@@ -21,7 +21,7 @@ export default function Footer() {
                 className="flex items-center gap-2.5"
               >
                 <img 
-                  src="/logo-calcularq.png" 
+                  src="/unnamed.png" 
                   alt="Calcularq" 
                   className="h-10 w-auto object-contain logo-white"
                 />
