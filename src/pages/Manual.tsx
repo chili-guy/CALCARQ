@@ -1,7 +1,24 @@
+import { useState } from "react";
 import { motion } from "framer-motion";
-import { BookOpen, Calculator, Settings2, Layers, DollarSign, Info } from "lucide-react";
+import { Calculator, Settings2, Layers, DollarSign, Info, ChevronDown, ChevronUp } from "lucide-react";
 
 export default function Manual() {
+  const [expandedFactors, setExpandedFactors] = useState<Record<string, boolean>>({
+    area: false,
+    stage: false,
+    detail: false,
+    technical: false,
+    bureaucratic: false,
+    monitoring: false,
+  });
+
+  const toggleFactor = (factorId: string) => {
+    setExpandedFactors(prev => ({
+      ...prev,
+      [factorId]: !prev[factorId]
+    }));
+  };
+
   return (
     <div className="min-h-screen bg-slate-50">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
@@ -12,7 +29,7 @@ export default function Manual() {
           className="text-center mb-12"
         >
           <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-calcularq-blue mb-6">
-            <BookOpen className="w-8 h-8 text-white" />
+            <img src="/favicon.png" alt="Calcularq" className="w-10 h-10 object-contain" />
           </div>
           <h1 className="text-4xl font-bold text-calcularq-blue mb-4">
             Manual de Instruções
@@ -176,104 +193,184 @@ export default function Manual() {
               seguintes:
             </p>
 
-            <div className="space-y-8">
+            <div className="space-y-4">
               {/* Fator 1: Área */}
-              <div className="border-l-4 border-calcularq-blue pl-4">
-                <h3 className="text-xl font-bold text-calcularq-blue mb-3">1. Área de projeto (m²)</h3>
-                <p className="text-slate-700 mb-4">
-                  <strong>Definição:</strong> Estimativa da metragem total de intervenção. Mede a escala física do
-                  projeto, impactando diretamente o volume de trabalho.
-                </p>
-                <ul className="space-y-3 text-slate-700">
-                  <li><strong>1. Até 50m²:</strong> Intervenções pontuais e rápidas. Como reformas de cômodos, banheiros, consultorias ou apartamentos pequenos.</li>
-                  <li><strong>2. De 51m² a 150m²:</strong> O padrão de mercado para projetos convencionais. Como casas de pavimento térreo, apartamentos completos, lojas de rua ou escritórios.</li>
-                  <li><strong>3. De 151m² a 500m²:</strong> Projetos de porte robusto e áreas generosas. Como casas de alto padrão, lajes corporativas inteiras ou restaurantes.</li>
-                  <li><strong>4. De 501m² a 1.000m²:</strong> Projetos de edificações completas e de porte significativo. Como mansões, sedes empresariais ou grandes espaços comerciais.</li>
-                  <li><strong>5. Acima de 1.000m²:</strong> Grandes volumes construtivos e áreas institucionais. Como escolas, hospitais, indústrias ou intervenções urbanísticas.</li>
-                </ul>
-                <p className="text-sm text-amber-700 mt-3 font-medium">
-                  Atenção: Os intervalos acima são a sugestão padrão do sistema. Você pode
-                  editá-los nas configurações do fator para adequá-lo à sua realidade.
-                </p>
+              <div className="border border-slate-200 rounded-lg overflow-hidden">
+                <button
+                  onClick={() => toggleFactor('area')}
+                  className="w-full flex items-center justify-between p-4 bg-slate-50 hover:bg-slate-100 transition-colors"
+                >
+                  <h3 className="text-lg font-bold text-calcularq-blue">1. Área de projeto (m²)</h3>
+                  {expandedFactors.area ? (
+                    <ChevronUp className="w-5 h-5 text-calcularq-blue" />
+                  ) : (
+                    <ChevronDown className="w-5 h-5 text-calcularq-blue" />
+                  )}
+                </button>
+                {expandedFactors.area && (
+                  <div className="p-4 border-t border-slate-200">
+                    <p className="text-slate-700 mb-4">
+                      <strong>Definição:</strong> Estimativa da metragem total de intervenção. Mede a escala física do
+                      projeto, impactando diretamente o volume de trabalho.
+                    </p>
+                    <ul className="space-y-3 text-slate-700">
+                      <li><strong>1. Até 49m²:</strong> Intervenções pontuais e rápidas. Como reformas de cômodos, banheiros, consultorias ou apartamentos pequenos.</li>
+                      <li><strong>2. 50 a 149m²:</strong> O padrão de mercado para projetos convencionais. Como casas de pavimento térreo, apartamentos completos, lojas de rua ou escritórios.</li>
+                      <li><strong>3. 150 a 499m²:</strong> Projetos de porte robusto e áreas generosas. Como casas de alto padrão, lajes corporativas inteiras ou restaurantes.</li>
+                      <li><strong>4. 500 a 999m²:</strong> Projetos de edificações completas e de porte significativo. Como mansões, sedes empresariais ou grandes espaços comerciais.</li>
+                      <li><strong>5. Acima de 1000m²:</strong> Grandes volumes construtivos e áreas institucionais. Como escolas, hospitais, indústrias ou intervenções urbanísticas.</li>
+                    </ul>
+                    <p className="text-sm text-amber-700 mt-3 font-medium">
+                      Atenção: Os intervalos acima são a sugestão padrão do sistema. Você pode
+                      editá-los nas configurações do fator para adequá-lo à sua realidade.
+                    </p>
+                  </div>
+                )}
               </div>
 
               {/* Fator 2: Etapa */}
-              <div className="border-l-4 border-calcularq-blue pl-4">
-                <h3 className="text-xl font-bold text-calcularq-blue mb-3">2. Etapa de Projeto</h3>
-                <p className="text-slate-700 mb-4">
-                  <strong>Definição:</strong> Define até qual fase do ciclo de desenvolvimento o arquiteto entrega
-                  produtos e se responsabiliza tecnicamente.
-                </p>
-                <ul className="space-y-2 text-slate-700">
-                  <li><strong>1. Consultoria:</strong> Apenas diagnósticos, visitas técnicas ou moodboards. Não há produção de desenhos técnicos ou arquivos formais de projeto.</li>
-                  <li><strong>2. Estudo Preliminar:</strong> Concepção visual e validação funcional. Entrega de 3D e plantas para aprovação estética, verificação de fluxos e dimensionamento dos ambientes. Insuficiente para construção.</li>
-                  <li><strong>3. Anteprojeto:</strong> Definição técnica do partido. Plantas dimensionadas que permitem aprovação na Prefeitura e orçamentos preliminares.</li>
-                  <li><strong>4. Projeto Executivo:</strong> Entrega do caderno técnico final focado na Arquitetura, contendo as informações necessárias para a execução da obra.</li>
-                  <li><strong>5. Coordenação de Complementares:</strong> O pacote completo. Além do Executivo, o arquiteto lidera a compatibilização rigorosa entre a arquitetura e os projetos complementares (estrutural, elétrico, hidráulico, ...).</li>
-                </ul>
+              <div className="border border-slate-200 rounded-lg overflow-hidden">
+                <button
+                  onClick={() => toggleFactor('stage')}
+                  className="w-full flex items-center justify-between p-4 bg-slate-50 hover:bg-slate-100 transition-colors"
+                >
+                  <h3 className="text-lg font-bold text-calcularq-blue">2. Etapa de Projeto</h3>
+                  {expandedFactors.stage ? (
+                    <ChevronUp className="w-5 h-5 text-calcularq-blue" />
+                  ) : (
+                    <ChevronDown className="w-5 h-5 text-calcularq-blue" />
+                  )}
+                </button>
+                {expandedFactors.stage && (
+                  <div className="p-4 border-t border-slate-200">
+                    <p className="text-slate-700 mb-4">
+                      <strong>Definição:</strong> Define até qual fase do ciclo de desenvolvimento o arquiteto desenvolverá o projeto.
+                    </p>
+                    <ul className="space-y-2 text-slate-700">
+                      <li><strong>1. Consultoria:</strong> Apenas diagnósticos, visitas técnicas ou moodboards. Não há produção de desenhos técnicos ou arquivos formais de projeto.</li>
+                      <li><strong>2. Estudo Preliminar:</strong> Concepção visual e validação funcional. Entrega de 3D e plantas para aprovação estética, verificação de fluxos e dimensionamento dos ambientes. Insuficiente para construção.</li>
+                      <li><strong>3. Anteprojeto:</strong> Definição técnica do partido. Plantas dimensionadas que permitem aprovação na Prefeitura e orçamentos preliminares.</li>
+                      <li><strong>4. Projeto Executivo:</strong> Entrega do caderno técnico final focado na Arquitetura, contendo as informações necessárias para a execução da obra.</li>
+                      <li><strong>5. Coordenação de Complementares:</strong> O pacote completo. Além do Executivo, o arquiteto lidera a compatibilização rigorosa entre a arquitetura e os projetos complementares (estrutural, elétrico, hidráulico, ...).</li>
+                    </ul>
+                  </div>
+                )}
               </div>
 
               {/* Fator 3: Detalhamento */}
-              <div className="border-l-4 border-calcularq-blue pl-4">
-                <h3 className="text-xl font-bold text-calcularq-blue mb-3">3. Nível de Detalhamento</h3>
-                <p className="text-slate-700 mb-4">
-                  <strong>Definição:</strong> Mede a quantidade de desenhos e o esforço criativo exigido para
-                  aprofundar soluções de design personalizadas.
-                </p>
-                <ul className="space-y-2 text-slate-700">
-                  <li><strong>1. Mínimo:</strong> Apenas diretrizes de layout e sugestões gerais. Sem detalhamento técnico ou esforço de criação específica.</li>
-                  <li><strong>2. Básico:</strong> Predomínio de soluções padronizadas e itens de catálogo. Baixa demanda de desenho e baixo esforço criativo.</li>
-                  <li><strong>3. Médio:</strong> Design sob medida utilizando padrões de mercado. Foco em itens convencionais (marcenaria e pedras), exigindo esforço de criação moderado.</li>
-                  <li><strong>4. Alto:</strong> Personalização abrangente e refinada. Exige alto esforço de criação e grande volume de desenhos para detalhar soluções estéticas elaboradas.</li>
-                  <li><strong>5. Máximo:</strong> Design autoral com soluções atípicas ou inéditas. Demanda esforço criativo extremo e detalhamento técnico exaustivo.</li>
-                </ul>
+              <div className="border border-slate-200 rounded-lg overflow-hidden">
+                <button
+                  onClick={() => toggleFactor('detail')}
+                  className="w-full flex items-center justify-between p-4 bg-slate-50 hover:bg-slate-100 transition-colors"
+                >
+                  <h3 className="text-lg font-bold text-calcularq-blue">3. Nível de Detalhamento</h3>
+                  {expandedFactors.detail ? (
+                    <ChevronUp className="w-5 h-5 text-calcularq-blue" />
+                  ) : (
+                    <ChevronDown className="w-5 h-5 text-calcularq-blue" />
+                  )}
+                </button>
+                {expandedFactors.detail && (
+                  <div className="p-4 border-t border-slate-200">
+                    <p className="text-slate-700 mb-4">
+                      <strong>Definição:</strong> Mede a quantidade de desenhos e o esforço criativo exigido.
+                    </p>
+                    <ul className="space-y-2 text-slate-700">
+                      <li><strong>1. Mínimo:</strong> Apenas diretrizes de layout e sugestões gerais. Sem detalhamento técnico ou esforço de criação específica.</li>
+                      <li><strong>2. Básico:</strong> Predomínio de soluções padronizadas e itens de catálogo. Baixa demanda de desenho e baixo esforço criativo.</li>
+                      <li><strong>3. Médio:</strong> Design sob medida utilizando padrões de mercado. Foco em itens convencionais (marcenaria e pedras), exigindo esforço de criação moderado.</li>
+                      <li><strong>4. Alto:</strong> Personalização abrangente e refinada. Exige alto esforço de criação e grande volume de desenhos para detalhar soluções estéticas elaboradas.</li>
+                      <li><strong>5. Máximo:</strong> Design autoral com soluções atípicas ou inéditas. Demanda esforço criativo extremo e detalhamento técnico exaustivo.</li>
+                    </ul>
+                  </div>
+                )}
               </div>
 
               {/* Fator 4: Exigência Técnica */}
-              <div className="border-l-4 border-calcularq-blue pl-4">
-                <h3 className="text-xl font-bold text-calcularq-blue mb-3">4. Exigência Técnica</h3>
-                <p className="text-slate-700 mb-4">
-                  <strong>Definição:</strong> Define o volume de estudo e a rigidez das normas e leis que o projeto deve
-                  atender.
-                </p>
-                <ul className="space-y-2 text-slate-700">
-                  <li><strong>1. Mínima:</strong> Apenas Código de Obras municipal. Conhecimento já consolidado, sem necessidade de estudo extra.</li>
-                  <li><strong>2. Baixa:</strong> Exige consultas pontuais a regulamentos locais específicos, como o regimento interno de condomínios.</li>
-                  <li><strong>3. Média:</strong> Requer adequação a normas técnicas rígidas de segurança e/ou acessibilidade, como a dos Bombeiros (AVCB) e a NBR 9050, além do padrão da Prefeitura.</li>
-                  <li><strong>4. Alta:</strong> Requer estudo de legislação e regras específicas da atividade, como normas do MEC para escolas ou normas de segurança para Agências Bancárias.</li>
-                  <li><strong>5. Máxima:</strong> Malha normativa rígida e restritiva. Exige domínio profundo de leis complexas, como Hospitalar (RDC-50), Ambiental ou Patrimônio Histórico.</li>
-                </ul>
+              <div className="border border-slate-200 rounded-lg overflow-hidden">
+                <button
+                  onClick={() => toggleFactor('technical')}
+                  className="w-full flex items-center justify-between p-4 bg-slate-50 hover:bg-slate-100 transition-colors"
+                >
+                  <h3 className="text-lg font-bold text-calcularq-blue">4. Exigência Técnica</h3>
+                  {expandedFactors.technical ? (
+                    <ChevronUp className="w-5 h-5 text-calcularq-blue" />
+                  ) : (
+                    <ChevronDown className="w-5 h-5 text-calcularq-blue" />
+                  )}
+                </button>
+                {expandedFactors.technical && (
+                  <div className="p-4 border-t border-slate-200">
+                    <p className="text-slate-700 mb-4">
+                      <strong>Definição:</strong> Define a rigidez das normas, leis e o volume de estudo técnico necessário.
+                    </p>
+                    <ul className="space-y-2 text-slate-700">
+                      <li><strong>1. Mínima:</strong> Apenas Código de Obras municipal. Conhecimento já consolidado, sem necessidade de estudo extra.</li>
+                      <li><strong>2. Baixa:</strong> Exige consultas pontuais a regulamentos locais específicos, como o regimento interno de condomínios.</li>
+                      <li><strong>3. Média:</strong> Requer adequação a normas técnicas rígidas de segurança e/ou acessibilidade, como a dos Bombeiros (AVCB) e a NBR 9050, além do padrão da Prefeitura.</li>
+                      <li><strong>4. Alta:</strong> Requer estudo de legislação e regras específicas da atividade, como normas do MEC para escolas ou normas de segurança para Agências Bancárias.</li>
+                      <li><strong>5. Máxima:</strong> Malha normativa rígida e restritiva. Exige domínio profundo de leis complexas, como Hospitalar (RDC-50), Ambiental ou Patrimônio Histórico.</li>
+                    </ul>
+                  </div>
+                )}
               </div>
 
               {/* Fator 5: Exigência Burocrática */}
-              <div className="border-l-4 border-calcularq-blue pl-4">
-                <h3 className="text-xl font-bold text-calcularq-blue mb-3">5. Exigência Burocrática</h3>
-                <p className="text-slate-700 mb-4">
-                  <strong>Definição:</strong> Mede a carga de trabalho administrativo, reuniões em órgãos públicos e
-                  gestão de processos de aprovação.
-                </p>
-                <ul className="space-y-2 text-slate-700">
-                  <li><strong>1. Mínima:</strong> Apenas formalização profissional (Emissão de RRT/ART).</li>
-                  <li><strong>2. Baixa:</strong> Trâmite em esfera única. Exige aprovação de projeto legal apenas na Prefeitura Municipal.</li>
-                  <li><strong>3. Média:</strong> O cenário mais comum. Requer a aprovação municipal somada a uma instância extra, como associações de condomínio ou corpo de bombeiros.</li>
-                  <li><strong>4. Alta:</strong> Exige a gestão de processos simultâneos ou específicos, como Vigilância Sanitária, concessionárias ou órgãos de trânsito.</li>
-                  <li><strong>5. Máxima:</strong> Requer processos longos e rigorosos, podendo envolver Licenciamento Ambiental, EIV (Estudo de Impacto de Vizinhança) ou Patrimônio Histórico.</li>
-                </ul>
+              <div className="border border-slate-200 rounded-lg overflow-hidden">
+                <button
+                  onClick={() => toggleFactor('bureaucratic')}
+                  className="w-full flex items-center justify-between p-4 bg-slate-50 hover:bg-slate-100 transition-colors"
+                >
+                  <h3 className="text-lg font-bold text-calcularq-blue">5. Exigência Burocrática</h3>
+                  {expandedFactors.bureaucratic ? (
+                    <ChevronUp className="w-5 h-5 text-calcularq-blue" />
+                  ) : (
+                    <ChevronDown className="w-5 h-5 text-calcularq-blue" />
+                  )}
+                </button>
+                {expandedFactors.bureaucratic && (
+                  <div className="p-4 border-t border-slate-200">
+                    <p className="text-slate-700 mb-4">
+                      <strong>Definição:</strong> Mede a carga administrativa e a gestão de aprovações em órgãos públicos.
+                    </p>
+                    <ul className="space-y-2 text-slate-700">
+                      <li><strong>1. Mínima:</strong> Apenas formalização profissional (Emissão de RRT/ART).</li>
+                      <li><strong>2. Baixa:</strong> Trâmite em esfera única. Exige aprovação de projeto legal apenas na Prefeitura Municipal.</li>
+                      <li><strong>3. Média:</strong> O cenário mais comum. Requer a aprovação municipal somada a uma instância extra, como associações de condomínio ou corpo de bombeiros.</li>
+                      <li><strong>4. Alta:</strong> Exige a gestão de processos simultâneos ou específicos, como Vigilância Sanitária, concessionárias ou órgãos de trânsito.</li>
+                      <li><strong>5. Máxima:</strong> Requer processos longos e rigorosos, podendo envolver Licenciamento Ambiental, EIV (Estudo de Impacto de Vizinhança) ou Patrimônio Histórico.</li>
+                    </ul>
+                  </div>
+                )}
               </div>
 
               {/* Fator 6: Dedicação */}
-              <div className="border-l-4 border-calcularq-blue pl-4">
-                <h3 className="text-xl font-bold text-calcularq-blue mb-3">6. Dedicação à Obra</h3>
-                <p className="text-slate-700 mb-4">
-                  <strong>Definição:</strong> Frequência de visitas e nível de responsabilidade no canteiro.
-                </p>
-                <ul className="space-y-2 text-slate-700">
-                  <li><strong>1. Levantamento:</strong> Visita única para medição. Ocorre apenas antes do início do projeto, sem retornos durante a execução da obra.</li>
-                  <li><strong>2. Pontual:</strong> Além do levantamento, envolve visitas estratégicas apenas em marcos críticos. Como na demarcação inicial (gabarito) e na entrega final.</li>
-                  <li><strong>3. Por Etapas:</strong> Visitas de conferência ao fim de fases específicas. Como checar a conclusão da alvenaria, pontos de elétrica ou instalação de marcenaria.</li>
-                  <li><strong>4. Acompanhamento:</strong> Rotina fixa de fiscalização. Exige visitas periódicas (semanais ou quinzenais) para garantir que a execução siga fielmente o projeto.</li>
-                  <li><strong>5. Gestão:</strong> Administração completa da execução. Envolve compras de materiais, controle rigoroso de cronograma e gestão direta da equipe de mão de obra.</li>
-                </ul>
+              <div className="border border-slate-200 rounded-lg overflow-hidden">
+                <button
+                  onClick={() => toggleFactor('monitoring')}
+                  className="w-full flex items-center justify-between p-4 bg-slate-50 hover:bg-slate-100 transition-colors"
+                >
+                  <h3 className="text-lg font-bold text-calcularq-blue">6. Dedicação à Obra</h3>
+                  {expandedFactors.monitoring ? (
+                    <ChevronUp className="w-5 h-5 text-calcularq-blue" />
+                  ) : (
+                    <ChevronDown className="w-5 h-5 text-calcularq-blue" />
+                  )}
+                </button>
+                {expandedFactors.monitoring && (
+                  <div className="p-4 border-t border-slate-200">
+                    <p className="text-slate-700 mb-4">
+                      <strong>Definição:</strong> Frequência de visitas e nível de responsabilidade no canteiro.
+                    </p>
+                    <ul className="space-y-2 text-slate-700">
+                      <li><strong>1. Levantamento:</strong> Visita única para medição. Ocorre apenas antes do início do projeto, sem retornos durante a execução da obra.</li>
+                      <li><strong>2. Pontual:</strong> Além do levantamento, envolve visitas estratégicas apenas em marcos críticos. Como na demarcação inicial (gabarito) e na entrega final.</li>
+                      <li><strong>3. Por Etapas:</strong> Visitas de conferência ao fim de fases específicas. Como checar a conclusão da alvenaria, pontos de elétrica ou instalação de marcenaria.</li>
+                      <li><strong>4. Acompanhamento:</strong> Rotina fixa de fiscalização. Exige visitas periódicas (semanais ou quinzenais) para garantir que a execução siga fielmente o projeto.</li>
+                      <li><strong>5. Gestão:</strong> Administração completa da execução. Envolve compras de materiais, controle rigoroso de cronograma e gestão direta da equipe de mão de obra.</li>
+                    </ul>
+                  </div>
+                )}
               </div>
             </div>
           </motion.section>

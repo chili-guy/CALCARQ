@@ -14,6 +14,9 @@ export default function Login() {
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [showForgotPassword, setShowForgotPassword] = useState(false);
+  const [forgotPasswordEmail, setForgotPasswordEmail] = useState("");
+  const [forgotPasswordMessage, setForgotPasswordMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
   
   const { login, register, user, isLoading: authLoading } = useAuth();
   const navigate = useNavigate();
@@ -208,6 +211,126 @@ export default function Login() {
           </div>
         </div>
       </motion.div>
+
+      {/* Modal Esqueci minha senha */}
+      {showForgotPassword && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="bg-white rounded-2xl shadow-xl border border-slate-200 p-8 max-w-md w-full"
+          >
+            <h2 className="text-2xl font-bold text-calcularq-blue mb-4">
+              Esqueci minha senha
+            </h2>
+            <p className="text-slate-600 mb-6">
+              Digite seu e-mail cadastrado. Enviaremos um link para redefinir sua senha.
+            </p>
+
+            {forgotPasswordMessage && (
+              <div className={`p-3 rounded-lg mb-4 ${
+                forgotPasswordMessage.type === "success" 
+                  ? "bg-green-50 border border-green-200 text-green-700"
+                  : "bg-red-50 border border-red-200 text-red-700"
+              }`}>
+                {forgotPasswordMessage.text}
+              </div>
+            )}
+
+            <form
+              onSubmit={async (e) => {
+                e.preventDefault();
+                setForgotPasswordMessage(null);
+
+                if (!forgotPasswordEmail || !forgotPasswordEmail.includes("@")) {
+                  setForgotPasswordMessage({
+                    type: "error",
+                    text: "Por favor, digite um e-mail válido."
+                  });
+                  return;
+                }
+
+                // Verificar se o e-mail existe
+                const { db } = await import("@/lib/database");
+                const users = db.getUsers();
+                const user = users.find(u => u.email === forgotPasswordEmail);
+
+                if (!user) {
+                  setForgotPasswordMessage({
+                    type: "error",
+                    text: "E-mail não encontrado em nosso sistema."
+                  });
+                  return;
+                }
+
+                // Gerar token de recuperação
+                const token = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+                const tokenExpiry = new Date(Date.now() + 3600000); // 1 hora
+
+                // Salvar token (em produção, salvar no banco de dados)
+                localStorage.setItem(`reset_token_${user.id}`, JSON.stringify({
+                  token,
+                  expiry: tokenExpiry.toISOString(),
+                  email: forgotPasswordEmail
+                }));
+
+                // Em produção, enviar e-mail aqui
+                // Por enquanto, apenas mostrar mensagem de sucesso
+                setForgotPasswordMessage({
+                  type: "success",
+                  text: `Instruções para redefinir sua senha foram enviadas para ${forgotPasswordEmail}. Verifique sua caixa de entrada. (Em produção, um e-mail real seria enviado)`
+                });
+
+                // Limpar após 5 segundos
+                setTimeout(() => {
+                  setShowForgotPassword(false);
+                  setForgotPasswordEmail("");
+                  setForgotPasswordMessage(null);
+                }, 5000);
+              }}
+              className="space-y-4"
+            >
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-2">
+                  E-mail
+                </label>
+                <div className="relative">
+                  <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+                  <input
+                    type="email"
+                    value={forgotPasswordEmail}
+                    onChange={(e) => setForgotPasswordEmail(e.target.value)}
+                    className="w-full pl-10 pr-3 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-calcularq-blue focus:border-calcularq-blue"
+                    placeholder="seu@email.com"
+                    required
+                  />
+                </div>
+              </div>
+
+              <div className="flex gap-3">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => {
+                    setShowForgotPassword(false);
+                    setForgotPasswordEmail("");
+                    setForgotPasswordMessage(null);
+                  }}
+                  className="flex-1"
+                >
+                  Cancelar
+                </Button>
+                <Button
+                  type="submit"
+                  className="flex-1 bg-calcularq-blue hover:bg-[#002366] text-white"
+                >
+                  Enviar
+                </Button>
+              </div>
+            </form>
+          </motion.div>
+        </div>
+      )}
     </div>
   );
 }
