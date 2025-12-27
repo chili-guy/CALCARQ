@@ -82,6 +82,13 @@ export default function Layout({ children }: LayoutProps) {
               {/* User Menu */}
               {user ? (
                 <>
+                  <Link
+                    to="/budgets"
+                    className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium text-slate-600 hover:bg-slate-100 hover:text-calcularq-blue transition-all"
+                  >
+                    <History className="w-4 h-4" />
+                    <span className="hidden sm:inline">Meus Cálculos</span>
+                  </Link>
                   {/* Manual - só para usuários que pagaram */}
                   {user.hasPaid && (
                     <Link
@@ -96,13 +103,6 @@ export default function Layout({ children }: LayoutProps) {
                       <span className="hidden sm:inline">Manual</span>
                     </Link>
                   )}
-                  <Link
-                    to="/budgets"
-                    className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium text-slate-600 hover:bg-slate-100 hover:text-calcularq-blue transition-all"
-                  >
-                    <History className="w-4 h-4" />
-                    <span className="hidden sm:inline">Meus Cálculos</span>
-                  </Link>
                   <div className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium text-slate-600">
                     <User className="w-4 h-4" />
                     <span className="hidden sm:inline">{user.name}</span>

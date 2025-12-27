@@ -28,7 +28,14 @@ function App() {
               </ProtectedRoute>
             } 
           />
-          <Route path="/manual" element={<Manual />} />
+          <Route 
+            path="/manual" 
+            element={
+              <ProtectedRoute requirePayment={true}>
+                <Manual />
+              </ProtectedRoute>
+            } 
+          />
           <Route path="/login" element={<Login />} />
           <Route path="/payment" element={<Payment />} />
           <Route 
