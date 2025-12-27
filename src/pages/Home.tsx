@@ -170,15 +170,15 @@ export default function Home() {
             className="bg-gradient-to-br from-calcularq-blue via-[#002366] to-calcularq-blue rounded-3xl p-8 md:p-12"
           >
             <div className="grid md:grid-cols-2 gap-8 items-center">
-              <div>
+              <div className="text-center">
                 <h2 className="text-2xl md:text-3xl font-bold text-white mb-4">
                   Fatores de Complexidade
                 </h2>
-                <p className="text-slate-300 mb-6 text-center">
+                <p className="text-slate-300 mb-6">
                   Nossa calculadora considera 6 fatores essenciais para 
                   determinar a complexidade real do seu projeto.
                 </p>
-                <Link to={createPageUrl("Calculator")}>
+                <Link to={createPageUrl("Calculator")} className="inline-block">
                   <Button 
                     className="bg-white text-calcularq-blue border-2 border-white hover:bg-slate-50 hover:border-slate-200 shadow-lg font-semibold px-6 py-3"
                   >
