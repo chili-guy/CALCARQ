@@ -55,3 +55,4 @@ Copie a URL e atualize `FRONTEND_URL`
 📖 **Guia completo**: Veja `GUIA_RAILWAY.md`
 
 
+
