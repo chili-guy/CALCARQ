@@ -332,6 +332,7 @@ async function sendEmailViaBrevoAPI(to, subject, html, from) {
   }
 
   try {
+    console.log('📧 Configurando Brevo API...');
     const apiInstance = new brevo.TransactionalEmailsApi();
     apiInstance.setApiKey(brevo.ApiKeyTypes.apiKey, brevoApiKey);
 
@@ -341,10 +342,15 @@ async function sendEmailViaBrevoAPI(to, subject, html, from) {
     sendSmtpEmail.sender = { email: from, name: 'Calcularq' };
     sendSmtpEmail.to = [{ email: to }];
 
+    console.log('📧 Enviando email via Brevo API...', { to, from, subject });
     const result = await apiInstance.sendTransacEmail(sendSmtpEmail);
+    console.log('✅ Email enviado via Brevo API:', result);
     return result;
   } catch (error) {
     console.error('❌ Erro ao enviar email via Brevo API:', error);
+    if (error.response) {
+      console.error('❌ Resposta do erro:', error.response.body);
+    }
     throw error;
   }
 }
