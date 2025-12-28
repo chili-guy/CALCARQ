@@ -278,7 +278,28 @@ function createEmailTransporter() {
     return null;
   }
 
-  return nodemailer.createTransport(emailConfig);
+  // Log de configuração (sem senha)
+  console.log('📧 Configurando SMTP:', {
+    host: emailConfig.host,
+    port: emailConfig.port,
+    secure: emailConfig.secure,
+    user: emailConfig.auth.user,
+    hasPassword: !!emailConfig.auth.pass
+  });
+
+  try {
+    const transporter = nodemailer.createTransport(emailConfig);
+    
+    // Adicionar timeout de conexão
+    transporter.set('connectionTimeout', 10000); // 10 segundos para conectar
+    transporter.set('greetingTimeout', 10000); // 10 segundos para greeting
+    transporter.set('socketTimeout', 10000); // 10 segundos para socket
+    
+    return transporter;
+  } catch (error) {
+    console.error('❌ Erro ao criar transporter SMTP:', error);
+    return null;
+  }
 }
 
 // Endpoint para solicitar reset de senha
@@ -357,15 +378,21 @@ app.post('/api/auth/forgot-password', async (req, res) => {
 
       try {
         console.log('📧 Iniciando envio de email...');
+        console.log('📧 Configuração:', {
+          to: mailOptions.to,
+          from: mailOptions.from,
+          host: process.env.SMTP_HOST,
+          port: process.env.SMTP_PORT
+        });
         const startTime = Date.now();
         
-        // Adicionar timeout de 15 segundos (mais curto para não travar)
+        // Adicionar timeout de 20 segundos
         const sendPromise = transporter.sendMail(mailOptions);
         const timeoutPromise = new Promise((_, reject) => {
           setTimeout(() => {
-            console.error('⏱️ Timeout ao enviar email após 15 segundos');
-            reject(new Error('Timeout ao enviar email (15s)'));
-          }, 15000);
+            console.error('⏱️ Timeout ao enviar email após 20 segundos');
+            reject(new Error('Timeout ao enviar email (20s) - Verifique configurações SMTP'));
+          }, 20000);
         });
         
         const info = await Promise.race([sendPromise, timeoutPromise]);
