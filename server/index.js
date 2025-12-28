@@ -350,31 +350,52 @@ app.post('/api/auth/forgot-password', async (req, res) => {
       logPaymentEvent('FORGOT_PASSWORD_ATTEMPTING_SEND', {
         userId: user.id,
         email: user.email,
-        from: mailOptions.from
+        from: mailOptions.from,
+        host: process.env.SMTP_HOST,
+        port: process.env.SMTP_PORT
       });
 
       try {
-        // Adicionar timeout de 30 segundos
+        console.log('📧 Iniciando envio de email...');
+        const startTime = Date.now();
+        
+        // Adicionar timeout de 15 segundos (mais curto para não travar)
         const sendPromise = transporter.sendMail(mailOptions);
         const timeoutPromise = new Promise((_, reject) => {
-          setTimeout(() => reject(new Error('Timeout ao enviar email (30s)')), 30000);
+          setTimeout(() => {
+            console.error('⏱️ Timeout ao enviar email após 15 segundos');
+            reject(new Error('Timeout ao enviar email (15s)'));
+          }, 15000);
         });
         
         const info = await Promise.race([sendPromise, timeoutPromise]);
+        const duration = Date.now() - startTime;
+        
+        console.log(`✅ Email enviado com sucesso em ${duration}ms`);
         logPaymentEvent('FORGOT_PASSWORD_EMAIL_SENT', {
           userId: user.id,
           email: user.email,
-          messageId: info.messageId
+          messageId: info.messageId,
+          duration: duration
         });
       } catch (emailError) {
-        console.error('❌ Erro ao enviar email:', emailError);
+        const errorMessage = emailError.message || String(emailError);
+        console.error('❌ Erro ao enviar email:', errorMessage);
+        console.error('❌ Detalhes do erro:', {
+          code: emailError.code,
+          command: emailError.command,
+          response: emailError.response,
+          responseCode: emailError.responseCode
+        });
+        
         logPaymentEvent('FORGOT_PASSWORD_EMAIL_ERROR', {
           userId: user.id,
           email: user.email,
-          error: emailError.message || String(emailError),
+          error: errorMessage,
           code: emailError.code,
           command: emailError.command,
-          stack: emailError.stack
+          response: emailError.response,
+          responseCode: emailError.responseCode
         });
         // Ainda retornar sucesso, mas logar o erro
       }
