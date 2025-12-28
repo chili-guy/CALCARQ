@@ -38,7 +38,9 @@ Para habilitar o envio de emails, configure as seguintes variáveis:
 - Se as variáveis SMTP não forem configuradas, o sistema funcionará normalmente, mas apenas logará os tokens de reset no console (modo desenvolvimento)
 - Para Gmail, você precisa criar uma "Senha de App" em https://myaccount.google.com/apppasswords ao invés de usar sua senha normal
 
-**📖 Guia completo de configuração**: Veja `COMO_CONFIGURAR_SMTP.md` na raiz do projeto para instruções detalhadas de configuração com Gmail, Outlook, SendGrid, Mailgun e outros provedores.
+**📖 Guias de configuração**: 
+- `SMTP_PRODUCAO_GRATIS.md` - **⭐ RECOMENDADO** - Guia focado em opções gratuitas para produção (SendGrid, Brevo, Mailgun)
+- `COMO_CONFIGURAR_SMTP.md` - Guia completo com todas as opções (Gmail, Outlook, SendGrid, etc.)
 
 ## Executar
 
