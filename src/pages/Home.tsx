@@ -78,7 +78,7 @@ export default function Home() {
                     <img 
                       src="/mockup.png" 
                       alt="Interface da Calculadora Calcularq" 
-                      className="w-full h-auto rounded-xl scale-125"
+                      className="w-full h-auto rounded-xl scale-105"
                     />
                   </div>
                 </motion.div>
