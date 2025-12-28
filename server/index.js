@@ -358,12 +358,29 @@ async function sendEmailViaBrevoAPI(to, subject, html, from) {
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error('❌ Erro na resposta do Brevo:', response.status, errorText);
-      throw new Error(`Brevo API error: ${response.status} - ${errorText}`);
+      let errorData;
+      try {
+        errorData = JSON.parse(errorText);
+      } catch {
+        errorData = { message: errorText };
+      }
+      console.error('❌ Erro na resposta do Brevo:', response.status, errorData);
+      logPaymentEvent('FORGOT_PASSWORD_EMAIL_ERROR', {
+        error: `Brevo API error: ${response.status}`,
+        details: errorData,
+        method: 'BREVO_API'
+      });
+      throw new Error(`Brevo API error: ${response.status} - ${JSON.stringify(errorData)}`);
     }
 
     const result = await response.json();
     console.log('✅ Email enviado via Brevo API:', result);
+    
+    // Verificar se há avisos na resposta
+    if (result.message && result.message.includes('pending')) {
+      console.warn('⚠️ Email pode estar pendente de verificação do sender');
+    }
+    
     return result;
   } catch (error) {
     console.error('❌ Erro ao enviar email via Brevo API:', error);
