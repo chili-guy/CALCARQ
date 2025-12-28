@@ -163,6 +163,22 @@ class LocalDatabase {
       }
     }
   }
+
+  // Update password
+  updateUserPassword(userId: string, newPassword: string): void {
+    const users = this.getUsers();
+    const userIndex = users.findIndex(u => u.id === userId);
+    if (userIndex >= 0) {
+      users[userIndex].password = newPassword; // Em produção, usar hash
+      this.saveUsers(users);
+      
+      // Atualizar usuário atual se for o mesmo
+      const currentUser = this.getCurrentUser();
+      if (currentUser && currentUser.id === userId) {
+        this.setCurrentUser(users[userIndex]);
+      }
+    }
+  }
 }
 
 export const db = new LocalDatabase();

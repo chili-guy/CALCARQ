@@ -6,6 +6,7 @@ import Manual from './pages/Manual'
 import Login from './pages/Login'
 import Payment from './pages/Payment'
 import BudgetsHistory from './pages/BudgetsHistory'
+import ResetPassword from './pages/ResetPassword'
 import Layout from './components/Layout'
 import ProtectedRoute from './components/ProtectedRoute'
 
@@ -37,6 +38,7 @@ function App() {
             } 
           />
           <Route path="/login" element={<Login />} />
+          <Route path="/reset-password" element={<ResetPassword />} />
           <Route path="/payment" element={<Payment />} />
           <Route 
             path="/budgets" 

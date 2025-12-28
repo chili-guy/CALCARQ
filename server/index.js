@@ -5,6 +5,8 @@ import Stripe from 'stripe';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import nodemailer from 'nodemailer';
+import crypto from 'crypto';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -42,6 +44,7 @@ const DATA_DIR = process.env.VERCEL
   : path.join(__dirname, 'data');
 const USERS_FILE = path.join(DATA_DIR, 'users.json');
 const LOGS_FILE = path.join(DATA_DIR, 'payment-logs.json');
+const RESET_TOKENS_FILE = path.join(DATA_DIR, 'reset-tokens.json');
 
 // Garantir que o diretório de dados existe
 if (!fs.existsSync(DATA_DIR)) {
@@ -91,6 +94,37 @@ function saveLog(logEntry) {
   } catch (error) {
     console.error('Erro ao salvar log:', error);
   }
+}
+
+// Funções para gerenciar tokens de reset de senha
+function readResetTokens() {
+  try {
+    if (fs.existsSync(RESET_TOKENS_FILE)) {
+      const data = fs.readFileSync(RESET_TOKENS_FILE, 'utf8');
+      return JSON.parse(data);
+    }
+  } catch (error) {
+    console.error('Erro ao ler tokens de reset:', error);
+  }
+  return {};
+}
+
+function saveResetTokens(tokens) {
+  try {
+    fs.writeFileSync(RESET_TOKENS_FILE, JSON.stringify(tokens, null, 2));
+  } catch (error) {
+    console.error('Erro ao salvar tokens de reset:', error);
+  }
+}
+
+function generateResetToken() {
+  return crypto.randomBytes(32).toString('hex');
+}
+
+// Buscar usuário por email no backend
+function getUserByEmail(email) {
+  const users = readUsers();
+  return Object.values(users).find(user => user.email === email);
 }
 
 function logPaymentEvent(event, details) {
@@ -221,6 +255,185 @@ app.post('/api/user/sync', (req, res) => {
     });
   } catch (error) {
     console.error('Erro ao sincronizar usuário:', error);
+    res.status(500).json({ error: 'Erro interno do servidor' });
+  }
+});
+
+// Configurar transporter de email
+function createEmailTransporter() {
+  // Usar variáveis de ambiente ou configuração padrão
+  const emailConfig = {
+    host: process.env.SMTP_HOST || 'smtp.gmail.com',
+    port: parseInt(process.env.SMTP_PORT || '587'),
+    secure: process.env.SMTP_SECURE === 'true', // true para 465, false para outras portas
+    auth: {
+      user: process.env.SMTP_USER || '',
+      pass: process.env.SMTP_PASS || ''
+    }
+  };
+
+  // Se não tiver credenciais configuradas, retornar null (modo de desenvolvimento)
+  if (!emailConfig.auth.user || !emailConfig.auth.pass) {
+    console.warn('⚠️ SMTP não configurado. Emails não serão enviados. Configure SMTP_USER e SMTP_PASS.');
+    return null;
+  }
+
+  return nodemailer.createTransport(emailConfig);
+}
+
+// Endpoint para solicitar reset de senha
+app.post('/api/auth/forgot-password', async (req, res) => {
+  try {
+    const { email } = req.body;
+    
+    if (!email) {
+      return res.status(400).json({ error: 'Email é obrigatório' });
+    }
+
+    // Buscar usuário por email
+    const user = getUserByEmail(email);
+    
+    // Sempre retornar sucesso (não revelar se o email existe ou não por segurança)
+    if (!user) {
+      // Mas ainda assim logar internamente
+      logPaymentEvent('FORGOT_PASSWORD_ATTEMPT_UNKNOWN_EMAIL', { email });
+      return res.json({ success: true, message: 'Se o email existir, você receberá instruções para redefinir sua senha.' });
+    }
+
+    // Gerar token de reset
+    const token = generateResetToken();
+    const expiresAt = new Date(Date.now() + 3600000); // 1 hora
+
+    // Salvar token
+    const tokens = readResetTokens();
+    tokens[token] = {
+      userId: user.id,
+      email: user.email,
+      expiresAt: expiresAt.toISOString(),
+      createdAt: new Date().toISOString()
+    };
+    saveResetTokens(tokens);
+
+    logPaymentEvent('FORGOT_PASSWORD_TOKEN_GENERATED', {
+      userId: user.id,
+      email: user.email
+    });
+
+    // Configurar email
+    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
+    const resetUrl = `${frontendUrl}/reset-password?token=${token}`;
+
+    const transporter = createEmailTransporter();
+    
+    if (transporter) {
+      // Enviar email
+      const smtpUser = process.env.SMTP_USER || '';
+      const mailOptions = {
+        from: process.env.SMTP_FROM || smtpUser,
+        to: user.email,
+        subject: 'Redefinição de Senha - Calcularq',
+        html: `
+          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+            <h2 style="color: #001f54;">Redefinição de Senha</h2>
+            <p>Olá,</p>
+            <p>Você solicitou a redefinição de senha da sua conta Calcularq.</p>
+            <p>Clique no botão abaixo para redefinir sua senha:</p>
+            <a href="${resetUrl}" style="display: inline-block; background-color: #001f54; color: white; padding: 12px 24px; text-decoration: none; border-radius: 5px; margin: 20px 0;">Redefinir Senha</a>
+            <p>Ou copie e cole este link no seu navegador:</p>
+            <p style="color: #666; word-break: break-all;">${resetUrl}</p>
+            <p style="color: #999; font-size: 12px; margin-top: 30px;">Este link expira em 1 hora.</p>
+            <p style="color: #999; font-size: 12px;">Se você não solicitou esta redefinição, ignore este email.</p>
+          </div>
+        `
+      };
+
+      try {
+        await transporter.sendMail(mailOptions);
+        logPaymentEvent('FORGOT_PASSWORD_EMAIL_SENT', {
+          userId: user.id,
+          email: user.email
+        });
+      } catch (emailError) {
+        console.error('Erro ao enviar email:', emailError);
+        logPaymentEvent('FORGOT_PASSWORD_EMAIL_ERROR', {
+          userId: user.id,
+          email: user.email,
+          error: emailError.message
+        });
+        // Ainda retornar sucesso, mas logar o erro
+      }
+    } else {
+      // Modo desenvolvimento: logar o token
+      console.log('🔑 Token de reset (desenvolvimento):', token);
+      console.log('🔗 URL de reset:', resetUrl);
+      logPaymentEvent('FORGOT_PASSWORD_TOKEN_GENERATED_DEV', {
+        userId: user.id,
+        email: user.email,
+        token: token,
+        resetUrl: resetUrl
+      });
+    }
+
+    res.json({ 
+      success: true, 
+      message: 'Se o email existir, você receberá instruções para redefinir sua senha.' 
+    });
+  } catch (error) {
+    console.error('Erro ao processar forgot password:', error);
+    res.status(500).json({ error: 'Erro interno do servidor' });
+  }
+});
+
+// Endpoint para resetar senha com token
+app.post('/api/auth/reset-password', (req, res) => {
+  try {
+    const { token, newPassword } = req.body;
+    
+    if (!token || !newPassword) {
+      return res.status(400).json({ error: 'Token e nova senha são obrigatórios' });
+    }
+
+    if (newPassword.length < 6) {
+      return res.status(400).json({ error: 'A senha deve ter pelo menos 6 caracteres' });
+    }
+
+    // Verificar token
+    const tokens = readResetTokens();
+    const tokenData = tokens[token];
+
+    if (!tokenData) {
+      return res.status(400).json({ error: 'Token inválido ou expirado' });
+    }
+
+    // Verificar se o token expirou
+    const expiresAt = new Date(tokenData.expiresAt);
+    if (expiresAt < new Date()) {
+      // Remover token expirado
+      delete tokens[token];
+      saveResetTokens(tokens);
+      return res.status(400).json({ error: 'Token expirado. Solicite um novo link de redefinição.' });
+    }
+
+    // Token válido - retornar informações para o frontend atualizar a senha
+    // Como a senha é armazenada no localStorage do frontend, apenas retornamos sucesso
+    // e o frontend fará a atualização local
+    logPaymentEvent('RESET_PASSWORD_TOKEN_VALIDATED', {
+      userId: tokenData.userId,
+      email: tokenData.email
+    });
+
+    // Remover token usado
+    delete tokens[token];
+    saveResetTokens(tokens);
+
+    res.json({
+      success: true,
+      userId: tokenData.userId,
+      email: tokenData.email,
+      message: 'Token válido. Você pode redefinir sua senha.'
+    });
+  } catch (error) {
+    console.error('Erro ao processar reset password:', error);
     res.status(500).json({ error: 'Erro interno do servidor' });
   }
 });

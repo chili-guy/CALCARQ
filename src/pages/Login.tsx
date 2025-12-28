@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import { LogIn, UserPlus, Mail, Lock, User } from "lucide-react";
 import { createPageUrl } from "@/utils";
+import { api } from "@/lib/api";
 
 export default function Login() {
   const [isLogin, setIsLogin] = useState(true);
@@ -152,6 +153,18 @@ export default function Login() {
               </div>
             </div>
 
+            {isLogin && (
+              <div className="text-right">
+                <button
+                  type="button"
+                  onClick={() => setShowForgotPassword(true)}
+                  className="text-sm text-calcularq-blue hover:underline"
+                >
+                  Esqueci minha senha
+                </button>
+              </div>
+            )}
+
             {error && (
               <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-700">
                 {error}
@@ -250,43 +263,25 @@ export default function Login() {
                   return;
                 }
 
-                // Verificar se o e-mail existe
-                const { db } = await import("@/lib/database");
-                const users = db.getUsers();
-                const user = users.find(u => u.email === forgotPasswordEmail);
+                try {
+                  const response = await api.forgotPassword(forgotPasswordEmail);
+                  setForgotPasswordMessage({
+                    type: "success",
+                    text: response.message || "Se o email existir, você receberá instruções para redefinir sua senha."
+                  });
 
-                if (!user) {
+                  // Limpar após 5 segundos
+                  setTimeout(() => {
+                    setShowForgotPassword(false);
+                    setForgotPasswordEmail("");
+                    setForgotPasswordMessage(null);
+                  }, 5000);
+                } catch (err) {
                   setForgotPasswordMessage({
                     type: "error",
-                    text: "E-mail não encontrado em nosso sistema."
+                    text: err instanceof Error ? err.message : "Erro ao processar solicitação. Tente novamente."
                   });
-                  return;
                 }
-
-                // Gerar token de recuperação
-                const token = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
-                const tokenExpiry = new Date(Date.now() + 3600000); // 1 hora
-
-                // Salvar token (em produção, salvar no banco de dados)
-                localStorage.setItem(`reset_token_${user.id}`, JSON.stringify({
-                  token,
-                  expiry: tokenExpiry.toISOString(),
-                  email: forgotPasswordEmail
-                }));
-
-                // Em produção, enviar e-mail aqui
-                // Por enquanto, apenas mostrar mensagem de sucesso
-                setForgotPasswordMessage({
-                  type: "success",
-                  text: `Instruções para redefinir sua senha foram enviadas para ${forgotPasswordEmail}. Verifique sua caixa de entrada. (Em produção, um e-mail real seria enviado)`
-                });
-
-                // Limpar após 5 segundos
-                setTimeout(() => {
-                  setShowForgotPassword(false);
-                  setForgotPasswordEmail("");
-                  setForgotPasswordMessage(null);
-                }, 5000);
               }}
               className="space-y-4"
             >
