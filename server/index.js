@@ -7,6 +7,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import nodemailer from 'nodemailer';
 import crypto from 'crypto';
+import * as brevo from '@getbrevo/brevo';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -321,6 +322,33 @@ function createEmailTransporter() {
   }
 }
 
+// Enviar email via API REST do Brevo (alternativa ao SMTP)
+async function sendEmailViaBrevoAPI(to, subject, html, from) {
+  const brevoApiKey = process.env.BREVO_API_KEY;
+  
+  if (!brevoApiKey) {
+    console.warn('⚠️ BREVO_API_KEY não configurada. Usando SMTP.');
+    return null;
+  }
+
+  try {
+    const apiInstance = new brevo.TransactionalEmailsApi();
+    apiInstance.setApiKey(brevo.ApiKeyTypes.apiKey, brevoApiKey);
+
+    const sendSmtpEmail = new brevo.SendSmtpEmail();
+    sendSmtpEmail.subject = subject;
+    sendSmtpEmail.htmlContent = html;
+    sendSmtpEmail.sender = { email: from, name: 'Calcularq' };
+    sendSmtpEmail.to = [{ email: to }];
+
+    const result = await apiInstance.sendTransacEmail(sendSmtpEmail);
+    return result;
+  } catch (error) {
+    console.error('❌ Erro ao enviar email via Brevo API:', error);
+    throw error;
+  }
+}
+
 // Endpoint para solicitar reset de senha
 app.post('/api/auth/forgot-password', async (req, res) => {
   try {
@@ -363,98 +391,128 @@ app.post('/api/auth/forgot-password', async (req, res) => {
     const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
     const resetUrl = `${frontendUrl}/reset-password?token=${token}`;
 
-    const transporter = createEmailTransporter();
-    
-    if (transporter) {
-      // Enviar email
-      const smtpUser = process.env.SMTP_USER || '';
-      const mailOptions = {
-        from: process.env.SMTP_FROM || smtpUser,
-        to: user.email,
-        subject: 'Redefinição de Senha - Calcularq',
-        html: `
-          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-            <h2 style="color: #001f54;">Redefinição de Senha</h2>
-            <p>Olá,</p>
-            <p>Você solicitou a redefinição de senha da sua conta Calcularq.</p>
-            <p>Clique no botão abaixo para redefinir sua senha:</p>
-            <a href="${resetUrl}" style="display: inline-block; background-color: #001f54; color: white; padding: 12px 24px; text-decoration: none; border-radius: 5px; margin: 20px 0;">Redefinir Senha</a>
-            <p>Ou copie e cole este link no seu navegador:</p>
-            <p style="color: #666; word-break: break-all;">${resetUrl}</p>
-            <p style="color: #999; font-size: 12px; margin-top: 30px;">Este link expira em 1 hora.</p>
-            <p style="color: #999; font-size: 12px;">Se você não solicitou esta redefinição, ignore este email.</p>
-          </div>
-        `
-      };
+    // Preparar conteúdo do email
+    const smtpUser = process.env.SMTP_USER || '';
+    const fromEmail = process.env.SMTP_FROM || smtpUser;
+    const emailSubject = 'Redefinição de Senha - Calcularq';
+    const emailHtml = `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+        <h2 style="color: #001f54;">Redefinição de Senha</h2>
+        <p>Olá,</p>
+        <p>Você solicitou a redefinição de senha da sua conta Calcularq.</p>
+        <p>Clique no botão abaixo para redefinir sua senha:</p>
+        <a href="${resetUrl}" style="display: inline-block; background-color: #001f54; color: white; padding: 12px 24px; text-decoration: none; border-radius: 5px; margin: 20px 0;">Redefinir Senha</a>
+        <p>Ou copie e cole este link no seu navegador:</p>
+        <p style="color: #666; word-break: break-all;">${resetUrl}</p>
+        <p style="color: #999; font-size: 12px; margin-top: 30px;">Este link expira em 1 hora.</p>
+        <p style="color: #999; font-size: 12px;">Se você não solicitou esta redefinição, ignore este email.</p>
+      </div>
+    `;
 
-      logPaymentEvent('FORGOT_PASSWORD_ATTEMPTING_SEND', {
-        userId: user.id,
-        email: user.email,
-        from: mailOptions.from,
-        host: process.env.SMTP_HOST,
-        port: process.env.SMTP_PORT
-      });
+    logPaymentEvent('FORGOT_PASSWORD_ATTEMPTING_SEND', {
+      userId: user.id,
+      email: user.email,
+      from: fromEmail,
+      method: process.env.BREVO_API_KEY ? 'API' : 'SMTP'
+    });
 
+    // Tentar primeiro via API REST do Brevo (mais confiável)
+    if (process.env.BREVO_API_KEY) {
       try {
-        console.log('📧 Iniciando envio de email...');
-        console.log('📧 Configuração:', {
-          to: mailOptions.to,
-          from: mailOptions.from,
-          host: process.env.SMTP_HOST,
-          port: process.env.SMTP_PORT
-        });
+        console.log('📧 Tentando enviar via Brevo API...');
         const startTime = Date.now();
-        
-        // Adicionar timeout de 20 segundos
-        const sendPromise = transporter.sendMail(mailOptions);
-        const timeoutPromise = new Promise((_, reject) => {
-          setTimeout(() => {
-            console.error('⏱️ Timeout ao enviar email após 20 segundos');
-            reject(new Error('Timeout ao enviar email (20s) - Verifique configurações SMTP'));
-          }, 20000);
-        });
-        
-        const info = await Promise.race([sendPromise, timeoutPromise]);
+        const result = await sendEmailViaBrevoAPI(user.email, emailSubject, emailHtml, fromEmail);
         const duration = Date.now() - startTime;
         
-        console.log(`✅ Email enviado com sucesso em ${duration}ms`);
+        console.log(`✅ Email enviado via Brevo API em ${duration}ms`);
         logPaymentEvent('FORGOT_PASSWORD_EMAIL_SENT', {
           userId: user.id,
           email: user.email,
-          messageId: info.messageId,
+          method: 'BREVO_API',
+          messageId: result.messageId,
           duration: duration
         });
-      } catch (emailError) {
-        const errorMessage = emailError.message || String(emailError);
-        console.error('❌ Erro ao enviar email:', errorMessage);
-        console.error('❌ Detalhes do erro:', {
-          code: emailError.code,
-          command: emailError.command,
-          response: emailError.response,
-          responseCode: emailError.responseCode
-        });
-        
+      } catch (apiError) {
+        console.error('❌ Erro ao enviar via Brevo API:', apiError.message);
         logPaymentEvent('FORGOT_PASSWORD_EMAIL_ERROR', {
           userId: user.id,
           email: user.email,
-          error: errorMessage,
-          code: emailError.code,
-          command: emailError.command,
-          response: emailError.response,
-          responseCode: emailError.responseCode
+          error: apiError.message,
+          method: 'BREVO_API'
         });
-        // Ainda retornar sucesso, mas logar o erro
+        // Tentar fallback para SMTP se API falhar
+        console.log('⚠️ Tentando fallback para SMTP...');
       }
-    } else {
-      // Modo desenvolvimento: logar o token
-      console.log('🔑 Token de reset (desenvolvimento):', token);
-      console.log('🔗 URL de reset:', resetUrl);
-      logPaymentEvent('FORGOT_PASSWORD_TOKEN_GENERATED_DEV', {
-        userId: user.id,
-        email: user.email,
-        token: token,
-        resetUrl: resetUrl
-      });
+    }
+
+    // Fallback: Tentar via SMTP (se API não configurada ou falhou)
+    if (!process.env.BREVO_API_KEY) {
+      const transporter = createEmailTransporter();
+      
+      if (transporter) {
+        const mailOptions = {
+          from: fromEmail,
+          to: user.email,
+          subject: emailSubject,
+          html: emailHtml
+        };
+
+        try {
+          console.log('📧 Tentando enviar via SMTP...');
+          const startTime = Date.now();
+          
+          // Adicionar timeout de 20 segundos
+          const sendPromise = transporter.sendMail(mailOptions);
+          const timeoutPromise = new Promise((_, reject) => {
+            setTimeout(() => {
+              console.error('⏱️ Timeout ao enviar email via SMTP após 20 segundos');
+              reject(new Error('Timeout ao enviar email (20s) - Verifique configurações SMTP'));
+            }, 20000);
+          });
+          
+          const info = await Promise.race([sendPromise, timeoutPromise]);
+          const duration = Date.now() - startTime;
+          
+          console.log(`✅ Email enviado via SMTP em ${duration}ms`);
+          logPaymentEvent('FORGOT_PASSWORD_EMAIL_SENT', {
+            userId: user.id,
+            email: user.email,
+            method: 'SMTP',
+            messageId: info.messageId,
+            duration: duration
+          });
+        } catch (emailError) {
+          const errorMessage = emailError.message || String(emailError);
+          console.error('❌ Erro ao enviar email via SMTP:', errorMessage);
+          console.error('❌ Detalhes do erro:', {
+            code: emailError.code,
+            command: emailError.command,
+            response: emailError.response,
+            responseCode: emailError.responseCode
+          });
+          
+          logPaymentEvent('FORGOT_PASSWORD_EMAIL_ERROR', {
+            userId: user.id,
+            email: user.email,
+            error: errorMessage,
+            method: 'SMTP',
+            code: emailError.code,
+            command: emailError.command,
+            response: emailError.response,
+            responseCode: emailError.responseCode
+          });
+        }
+      } else {
+        // Modo desenvolvimento: logar o token
+        console.log('🔑 Token de reset (desenvolvimento):', token);
+        console.log('🔗 URL de reset:', resetUrl);
+        logPaymentEvent('FORGOT_PASSWORD_TOKEN_GENERATED_DEV', {
+          userId: user.id,
+          email: user.email,
+          token: token,
+          resetUrl: resetUrl
+        });
+      }
     }
 
     res.json({ 
