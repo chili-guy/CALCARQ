@@ -7,7 +7,6 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import nodemailer from 'nodemailer';
 import crypto from 'crypto';
-import * as brevo from '@getbrevo/brevo';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -334,40 +333,42 @@ async function sendEmailViaBrevoAPI(to, subject, html, from) {
   try {
     console.log('📧 Configurando Brevo API...');
     
-    // Configurar API Key usando o método correto
-    const defaultClient = brevo.ApiClient.instance;
-    
-    // Verificar se authentications existe, caso contrário inicializar
-    if (!defaultClient.authentications) {
-      defaultClient.authentications = {};
+    // Usar fetch direto para a API REST do Brevo (mais simples e confiável)
+    const response = await fetch('https://api.brevo.com/v3/smtp/email', {
+      method: 'POST',
+      headers: {
+        'accept': 'application/json',
+        'api-key': brevoApiKey,
+        'content-type': 'application/json'
+      },
+      body: JSON.stringify({
+        sender: {
+          email: from,
+          name: 'Calcularq'
+        },
+        to: [
+          {
+            email: to
+          }
+        ],
+        subject: subject,
+        htmlContent: html
+      })
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error('❌ Erro na resposta do Brevo:', response.status, errorText);
+      throw new Error(`Brevo API error: ${response.status} - ${errorText}`);
     }
-    if (!defaultClient.authentications['api-key']) {
-      defaultClient.authentications['api-key'] = {};
-    }
-    
-    defaultClient.authentications['api-key'].apiKey = brevoApiKey;
 
-    // Criar instância da API de emails transacionais
-    const apiInstance = new brevo.TransactionalEmailsApi();
-
-    // Criar objeto de email
-    const sendSmtpEmail = new brevo.SendSmtpEmail();
-    sendSmtpEmail.subject = subject;
-    sendSmtpEmail.htmlContent = html;
-    sendSmtpEmail.sender = { email: from, name: 'Calcularq' };
-    sendSmtpEmail.to = [{ email: to }];
-
-    console.log('📧 Enviando email via Brevo API...', { to, from, subject });
-    const result = await apiInstance.sendTransacEmail(sendSmtpEmail);
+    const result = await response.json();
     console.log('✅ Email enviado via Brevo API:', result);
     return result;
   } catch (error) {
     console.error('❌ Erro ao enviar email via Brevo API:', error);
-    if (error.response) {
-      console.error('❌ Resposta do erro:', error.response.body);
-    }
-    if (error.body) {
-      console.error('❌ Body do erro:', error.body);
+    if (error.message) {
+      console.error('❌ Mensagem do erro:', error.message);
     }
     throw error;
   }
