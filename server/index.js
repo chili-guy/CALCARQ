@@ -336,8 +336,16 @@ async function sendEmailViaBrevoAPI(to, subject, html, from) {
     
     // Configurar API Key usando o método correto
     const defaultClient = brevo.ApiClient.instance;
-    const apiKey = defaultClient.authentications['api-key'];
-    apiKey.apiKey = brevoApiKey;
+    
+    // Verificar se authentications existe, caso contrário inicializar
+    if (!defaultClient.authentications) {
+      defaultClient.authentications = {};
+    }
+    if (!defaultClient.authentications['api-key']) {
+      defaultClient.authentications['api-key'] = {};
+    }
+    
+    defaultClient.authentications['api-key'].apiKey = brevoApiKey;
 
     // Criar instância da API de emails transacionais
     const apiInstance = new brevo.TransactionalEmailsApi();
