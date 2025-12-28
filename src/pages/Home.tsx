@@ -74,11 +74,11 @@ export default function Home() {
                   transition={{ delay: 0.3 }}
                   className="relative"
                 >
-                  <div className="bg-white/10 rounded-2xl p-4 backdrop-blur-sm border border-white/20 shadow-2xl">
+                  <div className="transparent">
                     <img 
                       src="/mockup.png" 
                       alt="Interface da Calculadora Calcularq" 
-                      className="w-full h-auto rounded-xl"
+                      className="w-full h-auto rounded-xl scale-125"
                     />
                   </div>
                 </motion.div>
