@@ -6,7 +6,7 @@ Guia para configurar o sistema "Esqueci minha senha" usando email da Umbler.
 
 ## 📋 Informações SMTP da Umbler
 
-A Umbler geralmente usa estas configurações SMTP:
+A Umbler usa estas configurações SMTP:
 
 ```
 SMTP_HOST = smtp.umbler.com
@@ -17,10 +17,17 @@ SMTP_PASS = sua_senha_do_email
 SMTP_FROM = seu_email@seu-dominio.com
 ```
 
+**✅ Configuração Oficial da Umbler:**
+- **Servidor SMTP:** `smtp.umbler.com`
+- **Porta:** `587`
+- **Criptografia:** STARTTLS (SMTP_SECURE = false)
+- **Autenticação:** Ativada
+- **Usuário:** Email completo (ex: `contato@calcarq.com.br`)
+
 **⚠️ IMPORTANTE:** 
 - Use o email completo (com @dominio.com)
 - Use a senha do email (não a senha do painel da Umbler)
-- A porta pode variar (587 ou 465)
+- Porta 587 com STARTTLS (não SSL)
 
 ---
 
@@ -109,7 +116,7 @@ Se não encontrar, entre em contato com o suporte da Umbler e pergunte:
 
 ## 🎯 Exemplo Completo
 
-### Se a Umbler usar porta 587 (TLS):
+### Configuração Oficial da Umbler (Porta 587 com STARTTLS):
 
 ```
 SMTP_HOST = smtp.umbler.com
@@ -120,16 +127,7 @@ SMTP_PASS = senha_do_email
 SMTP_FROM = contato@calcarq.com.br
 ```
 
-### Se a Umbler usar porta 465 (SSL):
-
-```
-SMTP_HOST = smtp.umbler.com
-SMTP_PORT = 465
-SMTP_SECURE = true
-SMTP_USER = contato@calcarq.com.br
-SMTP_PASS = senha_do_email
-SMTP_FROM = contato@calcarq.com.br
-```
+**✅ Esta é a configuração recomendada pela Umbler!**
 
 ---
 
