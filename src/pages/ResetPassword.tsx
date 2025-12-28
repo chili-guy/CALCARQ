@@ -26,6 +26,21 @@ export default function ResetPassword() {
     }
   }, [token]);
 
+  // Atualizar favicon e título
+  useEffect(() => {
+    const link = document.querySelector("link[rel~='icon']") as HTMLLinkElement;
+    if (link) {
+      link.href = "/favicon.png";
+    } else {
+      const newLink = document.createElement("link");
+      newLink.rel = "icon";
+      newLink.type = "image/png";
+      newLink.href = "/favicon.png";
+      document.head.appendChild(newLink);
+    }
+    document.title = "Redefinir Senha - Calcularq";
+  }, []);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");

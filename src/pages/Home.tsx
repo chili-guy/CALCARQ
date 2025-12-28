@@ -66,15 +66,22 @@ export default function Home() {
         <div className="relative bg-calcularq-blue overflow-hidden">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 lg:py-20">
             <div className="grid lg:grid-cols-2 gap-8 lg:gap-12 items-center">
-              {/* Left Side - Mockup (placeholder) */}
+              {/* Left Side - Mockup */}
               <div className="hidden lg:block">
-                <div className="bg-white/10 rounded-2xl p-8 backdrop-blur-sm border border-white/20">
-                  <div className="text-white/60 text-center py-16">
-                    <Calculator className="w-24 h-24 mx-auto mb-4 opacity-50" />
-                    <p className="text-sm">Interface da Calculadora</p>
-                    <p className="text-xs mt-2">Arte será adicionada posteriormente</p>
+                <motion.div
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 0.3 }}
+                  className="relative"
+                >
+                  <div className="bg-white/10 rounded-2xl p-4 backdrop-blur-sm border border-white/20 shadow-2xl">
+                    <img 
+                      src="/mockup.png" 
+                      alt="Interface da Calculadora Calcularq" 
+                      className="w-full h-auto rounded-xl"
+                    />
                   </div>
-                </div>
+                </motion.div>
               </div>
 
               {/* Right Side - Content */}

@@ -33,6 +33,21 @@ export default function Login() {
     }
   }, [user, authLoading, navigate]);
 
+  // Atualizar favicon
+  useEffect(() => {
+    const link = document.querySelector("link[rel~='icon']") as HTMLLinkElement;
+    if (link) {
+      link.href = "/favicon.png";
+    } else {
+      const newLink = document.createElement("link");
+      newLink.rel = "icon";
+      newLink.type = "image/png";
+      newLink.href = "/favicon.png";
+      document.head.appendChild(newLink);
+    }
+    document.title = isLogin ? "Entrar - Calcularq" : "Criar Conta - Calcularq";
+  }, [isLogin]);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
