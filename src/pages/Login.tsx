@@ -83,7 +83,7 @@ export default function Login() {
           {/* Logo */}
           <div className="text-center mb-8">
             <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-calcularq-blue mb-4">
-              <img src="/favicon.png" alt="Calcularq" className="w-12 h-12 object-contain" />
+              <img src="/Logomarca Branca Calcularq.png" alt="Calcularq" className="w-12 h-12 object-contain" />
             </div>
             <h1 className="text-3xl font-bold text-calcularq-blue mb-2">
               {isLogin ? "Entrar" : "Criar Conta"}
