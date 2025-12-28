@@ -347,18 +347,34 @@ app.post('/api/auth/forgot-password', async (req, res) => {
         `
       };
 
+      logPaymentEvent('FORGOT_PASSWORD_ATTEMPTING_SEND', {
+        userId: user.id,
+        email: user.email,
+        from: mailOptions.from
+      });
+
       try {
-        await transporter.sendMail(mailOptions);
+        // Adicionar timeout de 30 segundos
+        const sendPromise = transporter.sendMail(mailOptions);
+        const timeoutPromise = new Promise((_, reject) => {
+          setTimeout(() => reject(new Error('Timeout ao enviar email (30s)')), 30000);
+        });
+        
+        const info = await Promise.race([sendPromise, timeoutPromise]);
         logPaymentEvent('FORGOT_PASSWORD_EMAIL_SENT', {
           userId: user.id,
-          email: user.email
+          email: user.email,
+          messageId: info.messageId
         });
       } catch (emailError) {
-        console.error('Erro ao enviar email:', emailError);
+        console.error('❌ Erro ao enviar email:', emailError);
         logPaymentEvent('FORGOT_PASSWORD_EMAIL_ERROR', {
           userId: user.id,
           email: user.email,
-          error: emailError.message
+          error: emailError.message || String(emailError),
+          code: emailError.code,
+          command: emailError.command,
+          stack: emailError.stack
         });
         // Ainda retornar sucesso, mas logar o erro
       }

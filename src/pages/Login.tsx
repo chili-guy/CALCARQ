@@ -264,6 +264,7 @@ export default function Login() {
                 }
 
                 try {
+                  setIsLoading(true);
                   const response = await api.forgotPassword(forgotPasswordEmail);
                   setForgotPasswordMessage({
                     type: "success",
@@ -277,10 +278,13 @@ export default function Login() {
                     setForgotPasswordMessage(null);
                   }, 5000);
                 } catch (err) {
+                  console.error('Erro ao solicitar reset de senha:', err);
                   setForgotPasswordMessage({
                     type: "error",
                     text: err instanceof Error ? err.message : "Erro ao processar solicitação. Tente novamente."
                   });
+                } finally {
+                  setIsLoading(false);
                 }
               }}
               className="space-y-4"
@@ -317,9 +321,10 @@ export default function Login() {
                 </Button>
                 <Button
                   type="submit"
+                  disabled={isLoading}
                   className="flex-1 bg-calcularq-blue hover:bg-[#002366] text-white"
                 >
-                  Enviar
+                  {isLoading ? "Enviando..." : "Enviar"}
                 </Button>
               </div>
             </form>
