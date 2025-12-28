@@ -288,12 +288,31 @@ function createEmailTransporter() {
   });
 
   try {
-    const transporter = nodemailer.createTransport(emailConfig);
+    const transporter = nodemailer.createTransport({
+      ...emailConfig,
+      // Timeouts mais agressivos
+      connectionTimeout: 5000, // 5 segundos para conectar
+      greetingTimeout: 5000, // 5 segundos para greeting
+      socketTimeout: 5000, // 5 segundos para socket
+      // Opções adicionais para melhorar conexão
+      tls: {
+        rejectUnauthorized: false // Aceitar certificados auto-assinados (apenas para debug)
+      }
+    });
     
-    // Adicionar timeout de conexão
-    transporter.set('connectionTimeout', 10000); // 10 segundos para conectar
-    transporter.set('greetingTimeout', 10000); // 10 segundos para greeting
-    transporter.set('socketTimeout', 10000); // 10 segundos para socket
+    // Testar conexão antes de retornar
+    transporter.verify(function(error, success) {
+      if (error) {
+        console.error('❌ Erro ao verificar conexão SMTP:', error.message);
+        console.error('❌ Detalhes:', {
+          code: error.code,
+          command: error.command,
+          response: error.response
+        });
+      } else {
+        console.log('✅ Servidor SMTP verificado e pronto');
+      }
+    });
     
     return transporter;
   } catch (error) {
