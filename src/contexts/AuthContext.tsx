@@ -53,12 +53,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const login = async (email: string, password: string) => {
     const loggedUser = db.login(email, password);
     setUser(loggedUser);
+    // Sincronizar com backend após login
+    try {
+      await api.syncUser(loggedUser.id, loggedUser.email, loggedUser.name);
+    } catch (error) {
+      console.error("Erro ao sincronizar usuário após login:", error);
+    }
   };
 
   const register = async (email: string, password: string, name: string) => {
     const newUser = db.createUser(email, password, name);
     db.setCurrentUser(newUser);
     setUser(newUser);
+    // Sincronizar com backend após registro
+    try {
+      await api.syncUser(newUser.id, newUser.email, newUser.name);
+    } catch (error) {
+      console.error("Erro ao sincronizar usuário após registro:", error);
+    }
   };
 
   const logout = () => {
