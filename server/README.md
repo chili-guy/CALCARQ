@@ -19,8 +19,24 @@ cp .env.example .env
 2. Configure as variáveis de ambiente:
 - `STRIPE_SECRET_KEY`: Sua chave secreta do Stripe (encontre em https://dashboard.stripe.com/apikeys)
 - `STRIPE_WEBHOOK_SECRET`: Secret do webhook (obtenha após configurar o webhook no Stripe)
+- `STRIPE_PRICE_ID`: ID do preço do produto no Stripe (opcional, para checkout via API)
 - `PORT`: Porta do servidor (padrão: 3001)
 - `FRONTEND_URL`: URL do frontend (padrão: http://localhost:5173)
+
+### Configuração SMTP (para envio de emails - Esqueci minha senha)
+
+Para habilitar o envio de emails, configure as seguintes variáveis:
+
+- `SMTP_HOST`: Servidor SMTP (padrão: smtp.gmail.com)
+- `SMTP_PORT`: Porta SMTP (padrão: 587)
+- `SMTP_SECURE`: true/false - Use true para porta 465, false para 587 (padrão: false)
+- `SMTP_USER`: Email do remetente
+- `SMTP_PASS`: Senha do remetente (para Gmail, use "Senha de App")
+- `SMTP_FROM`: Email de origem (opcional, usa SMTP_USER se não definido)
+
+**Nota importante**: 
+- Se as variáveis SMTP não forem configuradas, o sistema funcionará normalmente, mas apenas logará os tokens de reset no console (modo desenvolvimento)
+- Para Gmail, você precisa criar uma "Senha de App" em https://myaccount.google.com/apppasswords ao invés de usar sua senha normal
 
 ## Executar
 
@@ -46,6 +62,10 @@ npm start
 ### Pagamentos
 - `POST /api/webhook/stripe` - Webhook do Stripe (não chamar manualmente)
 - `POST /api/payment/verify` - Verificação manual de pagamento
+
+### Autenticação
+- `POST /api/auth/forgot-password` - Solicitar reset de senha (envia email com token)
+- `POST /api/auth/reset-password` - Redefinir senha usando token
 
 ### Logs e Estatísticas
 - `GET /api/logs` - Lista logs de pagamento
