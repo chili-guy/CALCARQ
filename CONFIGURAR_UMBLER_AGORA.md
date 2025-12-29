@@ -158,3 +158,4 @@ Procure por:
 
 **Depois de configurar, teste imediatamente!** Se funcionar, você verá `FORGOT_PASSWORD_EMAIL_SENT` nos logs e receberá o email. Se não funcionar, os logs mostrarão o erro específico.
 
+

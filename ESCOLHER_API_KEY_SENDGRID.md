@@ -110,3 +110,4 @@ R: Sim! A API Key "TESTE" que você criou funciona perfeitamente para SMTP.
 
 **Não precisa criar uma nova!** Use a que você já tem e configure no Railway! 🚀
 
+

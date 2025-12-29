@@ -89,11 +89,16 @@ class LocalDatabase {
   login(email: string, password: string): User {
     const user = this.getUserByEmail(email);
     if (!user) {
+      console.log('❌ Login falhou: usuário não encontrado para email:', email);
       throw new Error('Email ou senha incorretos');
     }
     if (user.password !== password) {
+      console.log('❌ Login falhou: senha incorreta para email:', email);
+      console.log('❌ Senha esperada (primeiros 3 chars):', user.password.substring(0, 3) + '...');
+      console.log('❌ Senha fornecida (primeiros 3 chars):', password.substring(0, 3) + '...');
       throw new Error('Email ou senha incorretos');
     }
+    console.log('✅ Login bem-sucedido para email:', email);
     this.setCurrentUser(user);
     return user;
   }
@@ -175,6 +180,26 @@ class LocalDatabase {
       // Atualizar usuário atual se for o mesmo
       const currentUser = this.getCurrentUser();
       if (currentUser && currentUser.id === userId) {
+        this.setCurrentUser(users[userIndex]);
+      }
+      console.log('✅ Senha atualizada para userId:', userId);
+    } else {
+      console.warn('⚠️ Usuário não encontrado no localStorage para atualizar senha. userId:', userId);
+      console.warn('⚠️ Isso pode acontecer se o usuário estiver em um dispositivo diferente ou se o localStorage foi limpo.');
+    }
+  }
+
+  // Update user ID (useful when syncing with backend)
+  updateUserId(oldUserId: string, newUserId: string): void {
+    const users = this.getUsers();
+    const userIndex = users.findIndex(u => u.id === oldUserId);
+    if (userIndex >= 0) {
+      users[userIndex].id = newUserId;
+      this.saveUsers(users);
+      
+      // Atualizar usuário atual se for o mesmo
+      const currentUser = this.getCurrentUser();
+      if (currentUser && currentUser.id === oldUserId) {
         this.setCurrentUser(users[userIndex]);
       }
     }

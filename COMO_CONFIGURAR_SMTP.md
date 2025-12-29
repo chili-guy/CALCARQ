@@ -288,3 +288,4 @@ SMTP_FROM=calcularq@gmail.com
 
 Depois de configurar, reinicie o servidor e teste!
 
+

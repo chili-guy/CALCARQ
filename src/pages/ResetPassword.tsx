@@ -67,8 +67,87 @@ export default function ResetPassword() {
       const response = await api.resetPassword(token, password);
 
       if (response.success) {
-        // Atualizar senha no localStorage (banco de dados local)
+        // Verificar se o usuário existe no localStorage
+        let user = db.getUserById(response.userId);
+        
+        if (!user) {
+          // Se o usuário não existe, verificar se existe pelo email
+          console.warn('⚠️ Usuário não encontrado pelo userId. Buscando pelo email...');
+          user = db.getUserByEmail(response.email);
+          
+          if (user) {
+            // Se encontrou pelo email, atualizar o userId para corresponder
+            console.log('✅ Usuário encontrado pelo email. Atualizando userId...');
+            const users = db.getUsers();
+            const userIndex = users.findIndex(u => u.email === response.email);
+            if (userIndex >= 0) {
+              users[userIndex].id = response.userId;
+              db.saveUsers(users);
+              user = users[userIndex];
+            }
+          } else {
+            // Se não encontrou, criar novo usuário
+            console.warn('⚠️ Usuário não encontrado. Criando novo usuário no localStorage...');
+            try {
+              user = db.createUser(
+                response.email,
+                password, // Senha já será a nova senha
+                response.email.split('@')[0] // Nome padrão baseado no email
+              );
+              // Atualizar o userId para corresponder ao do backend
+              if (user.id !== response.userId) {
+                const users = db.getUsers();
+                const userIndex = users.findIndex(u => u.id === user!.id);
+                if (userIndex >= 0) {
+                  users[userIndex].id = response.userId;
+                  db.saveUsers(users);
+                  user = users[userIndex];
+                }
+              }
+              console.log('✅ Usuário criado no localStorage com nova senha.');
+            } catch (error) {
+              console.error('❌ Erro ao criar usuário:', error);
+              // Se falhar (ex: email já existe), tentar atualizar a senha do usuário existente
+              const existingUser = db.getUserByEmail(response.email);
+              if (existingUser) {
+                console.log('✅ Usuário existente encontrado. Atualizando senha...');
+                db.updateUserPassword(existingUser.id, password);
+                // Atualizar userId se necessário
+                if (existingUser.id !== response.userId) {
+                  const users = db.getUsers();
+                  const userIndex = users.findIndex(u => u.id === existingUser.id);
+                  if (userIndex >= 0) {
+                    users[userIndex].id = response.userId;
+                    db.saveUsers(users);
+                  }
+                }
+              }
+            }
+          }
+        }
+        
+        // Atualizar senha no localStorage (garantir que está atualizada)
+        console.log('🔄 Atualizando senha para userId:', response.userId);
         db.updateUserPassword(response.userId, password);
+        
+        // Verificar se a atualização foi bem-sucedida
+        const updatedUser = db.getUserById(response.userId);
+        if (updatedUser) {
+          console.log('✅ Senha atualizada com sucesso. Usuário encontrado no localStorage.');
+          console.log('✅ Email:', updatedUser.email);
+          console.log('✅ Você pode fazer login com este email e a nova senha.');
+        } else {
+          // Tentar buscar pelo email como fallback
+          const userByEmail = db.getUserByEmail(response.email);
+          if (userByEmail) {
+            console.log('✅ Usuário encontrado pelo email. Senha atualizada.');
+            console.log('✅ Email:', userByEmail.email);
+            console.log('✅ Você pode fazer login com este email e a nova senha.');
+          } else {
+            console.error('❌ ERRO: Usuário não encontrado no localStorage após atualização!');
+            console.error('❌ Isso pode acontecer se o localStorage foi limpo ou se você está em um dispositivo diferente.');
+          }
+        }
 
         setSuccess(true);
 

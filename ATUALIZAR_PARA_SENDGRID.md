@@ -133,3 +133,4 @@ Se você não tem a API Key do SendGrid:
 
 Isso é específico do SendGrid. Outros provedores usam o email como usuário, mas SendGrid usa `apikey` e a API Key como senha.
 
+

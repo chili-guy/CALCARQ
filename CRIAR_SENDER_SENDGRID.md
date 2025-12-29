@@ -249,3 +249,4 @@ R: Não conseguirá enviar emails. É obrigatório.
 
 **Dica:** Se não tiver domínio próprio, use seu email pessoal por enquanto. Funciona perfeitamente! ✅
 
+

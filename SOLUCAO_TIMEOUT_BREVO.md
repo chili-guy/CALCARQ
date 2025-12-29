@@ -108,3 +108,4 @@ Vou modificar o código para usar a API REST do Brevo ao invés de SMTP. Isso re
 
 **Qual você prefere?** Posso implementar qualquer uma das duas! 🚀
 
+

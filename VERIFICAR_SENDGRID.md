@@ -164,3 +164,4 @@ R: Sim, nos primeiros envios é comum. Conforme você envia mais, a reputação 
 
 **Resumo:** Teste enviando um email pelo seu aplicativo. Se funcionar, volte ao SendGrid e clique em "Verify Integration"! ✅
 
+

@@ -75,3 +75,4 @@ Para usar via SMTP, você pode escolher qualquer tipo:
 
 **Não precisa criar uma nova API Key!** A que você tem já funciona! 🎉
 
+
