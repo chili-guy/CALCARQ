@@ -21,13 +21,14 @@ export default function Home() {
   // Carregar script do Senja.io
   useEffect(() => {
     const script = document.createElement('script');
-    script.src = 'https://widget.senja.io/widget.js';
+    script.src = 'https://widget.senja.io/widget/8caa136d-e38e-4b16-bed3-b8ae95ddf249/platform.js';
+    script.type = 'text/javascript';
     script.async = true;
     document.body.appendChild(script);
 
     return () => {
       // Limpar script ao desmontar
-      const existingScript = document.querySelector('script[src="https://widget.senja.io/widget.js"]');
+      const existingScript = document.querySelector('script[src*="widget.senja.io"]');
       if (existingScript) {
         document.body.removeChild(existingScript);
       }
@@ -122,8 +123,10 @@ export default function Home() {
                   <div className="mb-6 flex items-center justify-center">
                     <div 
                       className="senja-embed" 
-                      data-id="GRdv6A"
-                      style={{ width: '100%', maxWidth: '600px' }}
+                      data-id="8caa136d-e38e-4b16-bed3-b8ae95ddf249"
+                      data-mode="shadow"
+                      data-lazyload="false"
+                      style={{ display: 'block', width: '100%' }}
                     />
                   </div>
                   
