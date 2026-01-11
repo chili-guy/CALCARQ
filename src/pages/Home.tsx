@@ -2,6 +2,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
+import { useEffect } from "react";
 import { 
   Calculator, 
   Globe,
@@ -16,6 +17,22 @@ import { createPageUrl } from "@/utils";
 export default function Home() {
   const { user } = useAuth();
   const navigate = useNavigate();
+
+  // Carregar script do Senja.io
+  useEffect(() => {
+    const script = document.createElement('script');
+    script.src = 'https://widget.senja.io/widget.js';
+    script.async = true;
+    document.body.appendChild(script);
+
+    return () => {
+      // Limpar script ao desmontar
+      const existingScript = document.querySelector('script[src="https://widget.senja.io/widget.js"]');
+      if (existingScript) {
+        document.body.removeChild(existingScript);
+      }
+    };
+  }, []);
 
   const handleCalculatorClick = (e: React.MouseEvent) => {
     if (!user) {
@@ -108,7 +125,6 @@ export default function Home() {
                       data-id="GRdv6A"
                       style={{ width: '100%', maxWidth: '600px' }}
                     />
-                    <script async src="https://widget.senja.io/widget.js" />
                   </div>
                   
                   {/* Botão de avaliação para usuários pagos */}
