@@ -1,7 +1,6 @@
 import { useState, useMemo, useEffect } from "react";
-import { Calculator, Info } from "lucide-react";
+import { Calculator } from "lucide-react";
 import ExpenseCard, { Expense } from "./ExpenseCard";
-import { Button } from "@/components/ui/button";
 
 interface MinimumHourCalculatorProps {
   onCalculate: (minHourRate: number) => void;

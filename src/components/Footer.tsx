@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { Mail, Home, Calculator, BookOpen, FileText, Shield } from "lucide-react";
+import { Mail, Home, Calculator, FileText, Shield } from "lucide-react";
 import { createPageUrl } from "@/utils";
 import LegalModal from "./LegalModal";
 import { termsContent, privacyContent } from "@/lib/legalContent";

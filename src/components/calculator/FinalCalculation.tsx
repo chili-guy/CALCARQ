@@ -65,7 +65,6 @@ export default function FinalCalculation({
   // Calcular valores com desconto
   const projectPriceWithDiscount = projectPrice * (1 - commercialDiscount / 100);
   const discountAmount = projectPrice * (commercialDiscount / 100);
-  const adjustedHourlyRateWithDiscount = adjustedHourlyRate * (1 - commercialDiscount / 100);
   const totalVariableExpenses = variableExpenses.reduce((sum, exp) => sum + exp.value, 0);
   const finalSalePriceWithDiscount = projectPriceWithDiscount + totalVariableExpenses;
 
@@ -278,43 +277,42 @@ export default function FinalCalculation({
         </div>
       </div>
 
-        {/* Save Budget Button */}
-        <div className="mt-6 pt-6 border-t border-slate-200 space-y-4">
-          <SaveBudgetButton
-            budgetData={{
-              minHourlyRate,
-              factors: factors.map(factor => ({
-                id: factor.id,
-                name: factor.name,
-                weight: factor.weight,
-                level: factorLevels[factor.id] || 0,
-              })),
-              areaIntervals,
-              selections: factorLevels,
-              estimatedHours,
-              fixedExpenses,
-              productiveHours,
-              commercialDiscount,
-              variableExpenses,
-              results: {
-                globalComplexity,
-                adjustedHourlyRate,
-                projectPrice,
-                finalSalePrice,
-              },
-            }}
-          />
-          
-          {/* Botão de Avaliação */}
-          <a
-            href="https://senja.io/p/calcularq/r/GRdv6A"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="block text-center text-[#fc7338] hover:underline font-medium text-sm"
-          >
-            Avalie a Calcularq e ganhe um cupom de 25% para um colega
-          </a>
-        </div>
+      {/* Save Budget Button */}
+      <div className="mt-6 pt-6 border-t border-slate-200 space-y-4">
+        <SaveBudgetButton
+          budgetData={{
+            minHourlyRate,
+            factors: factors.map(factor => ({
+              id: factor.id,
+              name: factor.name,
+              weight: factor.weight,
+              level: factorLevels[factor.id] || 0,
+            })),
+            areaIntervals,
+            selections: factorLevels,
+            estimatedHours,
+            fixedExpenses,
+            productiveHours,
+            commercialDiscount,
+            variableExpenses,
+            results: {
+              globalComplexity,
+              adjustedHourlyRate,
+              projectPrice,
+              finalSalePrice,
+            },
+          }}
+        />
+        
+        {/* Botão de Avaliação */}
+        <a
+          href="https://senja.io/p/calcularq/r/GRdv6A"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="block text-center text-[#fc7338] hover:underline font-medium text-sm"
+        >
+          Avalie a Calcularq e ganhe um cupom de 25% para um colega
+        </a>
       </div>
     </div>
   );

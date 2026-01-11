@@ -9,8 +9,7 @@ import {
   DollarSign,
   Zap,
   ArrowRight,
-  CheckCircle2,
-  Star
+  CheckCircle2
 } from "lucide-react";
 import { createPageUrl } from "@/utils";
 
