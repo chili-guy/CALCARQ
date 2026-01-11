@@ -181,3 +181,4 @@ SMTP_FROM = seu_email@seu-dominio.com
 Se quiser, posso te ajudar a configurar o Brevo passo a passo agora mesmo! 🚀
 
 
+

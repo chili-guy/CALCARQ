@@ -1,0 +1,139 @@
+Passo a passo do que você tem que fazer (Dev)
+1) Criar o projeto Next.js (padrão)
+
+Criar um repo novo no GitHub
+
+Rodar:
+
+npx create-next-app@latest nome-projeto
+
+Subir o projeto inicial no GitHub (commit + push)
+
+✅ Resultado: repo no GitHub com Next.js rodando local.
+
+2) Estruturar a página HTML dentro do Next.js
+
+Você disse: “pagina em html ok”.
+Então o dev precisa:
+
+Criar uma rota tipo:
+
+App Router: app/page.tsx ou app/(site)/page.tsx
+
+ou Pages Router: pages/index.tsx
+
+Copiar o HTML e transformar em JSX (ajustando class → className, for → htmlFor, etc.)
+
+Colocar assets (imagens, css, etc.) em:
+
+public/ (imagens, ícones, etc.)
+
+CSS em app/globals.css ou styles/
+
+✅ Resultado: página abre igual ao HTML original.
+
+3) Colocar seu JSON no projeto e carregar ele
+
+Como você já tem o JSON, o dev deve:
+
+Opção A (simples e rápida): JSON local
+
+Criar: data/page.json
+
+Importar e usar no componente da página:
+
+preencher textos, títulos, imagens, botões, etc.
+
+Opção B (mais escalável): API Route
+
+Criar endpoint:
+
+App Router: app/api/page/route.ts
+
+Pages Router: pages/api/page.js
+
+Página faz fetch desse endpoint e renderiza.
+
+✅ Resultado: o conteúdo da página vem do JSON e não “hardcoded”.
+
+4) Bloquear a página se NÃO tiver parâmetro na URL (obrigatório)
+
+Você pediu: “permitir pra vir apenas com o parâmetro da URL”.
+
+O correto (mais seguro) é fazer isso no server / middleware, não só no front.
+
+Implementação recomendada: Middleware
+
+Criar middleware.ts na raiz do projeto
+
+No middleware:
+
+Ler searchParams da URL
+
+Verificar se existe o parâmetro (ex: token)
+
+(Se você quiser valor fixo, validar também: token === "SEU_VALOR")
+
+Se não tiver ou for inválido:
+
+retornar NextResponse.redirect("/blocked") ou NextResponse.rewrite("/404")
+
+Criar página de bloqueio:
+
+app/blocked/page.tsx (ou pages/blocked.tsx)
+
+✅ Resultado: se abrir sem parâmetro → bloqueia sempre.
+
+5) Deploy na Vercel integrado ao GitHub
+
+Entrar na Vercel
+
+Import Project → escolher repo do GitHub
+
+Framework detecta Next.js automático
+
+Deploy
+
+Cada push no GitHub → atualiza na Vercel automático
+
+✅ Resultado: link final no ar, CI/CD automático.
+
+6) Testes finais obrigatórios
+
+O dev tem que testar 3 cenários:
+
+URL sem parâmetro
+
+https://seusite.vercel.app/
+
+Deve bloquear (404 ou /blocked)
+
+URL com parâmetro
+
+https://seusite.vercel.app/?token=QUALQUER
+
+Deve abrir
+
+URL com parâmetro inválido (se você escolher validar valor)
+
+?token=errado
+
+Deve bloquear
+
+✅ Resultado: regra funcionando 100%.
+
+7) Entrega final
+
+O dev te entrega:
+
+Link do projeto na Vercel
+
+Repo no GitHub
+
+Um README simples com:
+
+como rodar local
+
+onde mudar o JSON
+
+qual parâmetro está sendo validado

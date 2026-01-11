@@ -43,23 +43,34 @@ export default function Footer() {
                   <Calculator className="w-4 h-4" />
                   Calculadora
                 </Link>
-                <Link 
-                  to={createPageUrl("Manual")}
-                  className="flex items-center gap-2 text-sm text-white/80 hover:text-white transition-colors"
+              </nav>
+              
+              {/* Termos e Política */}
+              <nav className="space-y-2 mt-4">
+                <button
+                  onClick={() => setShowTerms(true)}
+                  className="flex items-center gap-2 text-sm text-white/80 hover:text-white transition-colors w-full text-left"
                 >
-                  <BookOpen className="w-4 h-4" />
-                  Manual
-                </Link>
+                  <FileText className="w-4 h-4" />
+                  Termos de Uso
+                </button>
+                <button
+                  onClick={() => setShowPrivacy(true)}
+                  className="flex items-center gap-2 text-sm text-white/80 hover:text-white transition-colors w-full text-left"
+                >
+                  <Shield className="w-4 h-4" />
+                  Política de Privacidade
+                </button>
               </nav>
               
               {/* Email */}
               <div className="flex items-center gap-2 text-sm text-white/80">
                 <Mail className="w-4 h-4" />
                 <a 
-                  href="mailto:atendimento.calcularq@gmail.com"
+                  href="mailto:atendimento@calcularq.com.br"
                   className="hover:text-white transition-colors"
                 >
-                  atendimento.calcularq@gmail.com
+                  atendimento@calcularq.com.br
                 </a>
               </div>
             </div>
@@ -83,23 +94,6 @@ export default function Footer() {
             <div className="flex flex-col md:flex-row justify-between items-center gap-4">
               <div className="text-sm text-white/60">
                 <p>© {new Date().getFullYear()} <span className="text-white font-semibold">calcularq.com.br</span>. Todos os direitos reservados.</p>
-              </div>
-              <div className="flex items-center gap-4 text-sm text-white/60">
-                <button
-                  onClick={() => setShowTerms(true)}
-                  className="hover:text-white transition-colors flex items-center gap-1"
-                >
-                  <FileText className="w-3 h-3" />
-                  Termos de Uso
-                </button>
-                <span>•</span>
-                <button
-                  onClick={() => setShowPrivacy(true)}
-                  className="hover:text-white transition-colors flex items-center gap-1"
-                >
-                  <Shield className="w-3 h-3" />
-                  Política de Privacidade
-                </button>
               </div>
             </div>
           </div>

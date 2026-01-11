@@ -234,3 +234,4 @@ ramonsousa1301@gmail.com → Caixa de entrada → Pasta de SPAM
 **Me diga o que aparece nos logs do Railway e no SendGrid Activity que eu te ajudo a resolver!** 🔍
 
 
+

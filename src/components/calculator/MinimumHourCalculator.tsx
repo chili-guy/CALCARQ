@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { Calculator, Info } from "lucide-react";
 import ExpenseCard, { Expense } from "./ExpenseCard";
 import { Button } from "@/components/ui/button";
@@ -53,6 +53,22 @@ export default function MinimumHourCalculator({
     onCalculate(calculatedMinHourRate);
   };
 
+  // Calcular automaticamente quando valores mudarem
+  useEffect(() => {
+    if (!useManual && calculatedMinHourRate > 0) {
+      handleCalculate();
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [calculatedMinHourRate, useManual]);
+
+  // Garantir que sempre haja pelo menos um card de despesa fixa
+  useEffect(() => {
+    if (!useManual && fixedExpenses.length === 0) {
+      handleAddExpense({ id: Date.now().toString(), name: "", value: 0 });
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   return (
     <div className="bg-white rounded-2xl border border-slate-200 p-6 lg:p-8 shadow-sm">
       <div className="flex items-center gap-3 mb-6">
@@ -64,7 +80,8 @@ export default function MinimumHourCalculator({
             Calculadora da Hora Técnica Mínima
           </h2>
           <p className="text-sm text-slate-500 mt-1">
-            Preencha os dados do escritório para descobrir quanto custa a hora técnica mínima
+            Preencha os dados do seu escritório para descobrir o valor da sua hora técnica
+            mínima.
           </p>
         </div>
       </div>
@@ -171,22 +188,6 @@ export default function MinimumHourCalculator({
             </span>
           </div>
         </div>
-
-        {/* Info */}
-        <div className="flex items-start gap-2 p-3 bg-blue-50 border border-blue-200 rounded-lg">
-          <Info className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
-          <p className="text-sm text-blue-700">
-            <strong>Fórmula:</strong> Hora Técnica Mín. = (Despesas Fixas Mensais + Pró-labore Mínimo) / Horas Produtivas Mensais
-          </p>
-        </div>
-
-        {/* Botão Calcular */}
-        <Button
-          onClick={handleCalculate}
-          className="w-full bg-calcularq-blue hover:bg-[#002366] text-white py-6 text-lg font-semibold"
-        >
-          Confirmar Hora Técnica Mínima
-        </Button>
       </div>
     </div>
   );

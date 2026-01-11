@@ -156,3 +156,4 @@ Se aparecer timeout, o problema é na conexão SMTP.
 **Verifique primeiro as credenciais e depois a conectividade!**
 
 
+

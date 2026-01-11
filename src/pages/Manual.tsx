@@ -29,18 +29,18 @@ export default function Manual() {
           className="text-center mb-12"
         >
           <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-calcularq-blue mb-6">
-            <img src="/favicon.png" alt="Calcularq" className="w-10 h-10 object-contain" />
+            <img src="/Logomarca Branca Calcularq.png" alt="Calcularq" className="w-10 h-10 object-contain" />
           </div>
           <h1 className="text-4xl font-bold text-calcularq-blue mb-4">
             Manual de Instruções
           </h1>
-          <p className="text-lg text-slate-600 leading-relaxed text-justify">
+          <p className="text-lg text-slate-600 leading-relaxed text-center max-w-3xl mx-auto">
             Bem-vindo à Calcularq, uma calculadora que utiliza um algoritmo de precificação por
             complexidade. Diferente de tabelas convencionais baseadas apenas em metragem quadrada
             ou estimativas subjetivas, a Calcularq gera honorários cruzando o custo operacional do seu
             trabalho com o nível de complexidade de cada projeto.
           </p>
-          <p className="text-lg text-slate-700 font-semibold mt-4">
+          <p className="text-lg text-slate-700 font-semibold mt-4 text-center">
             Siga o roteiro abaixo para entender o sistema e realizar seus cálculos:
           </p>
         </motion.div>
@@ -390,12 +390,12 @@ export default function Manual() {
                 4. Composição Final do Preço
               </h2>
             </div>
-            <p className="text-slate-700 mb-6">
-              Nesta última etapa, o sistema cruza os dados para calcular o Índice de Complexidade Global.
-              Ele utiliza esse índice para transformar sua Hora Técnica Mínima em uma Hora Técnica
+            <p className="text-slate-700 mb-6 text-center">
+              Nesta última etapa, o sistema cruza os dados para calcular o Índice de Complexidade
+              Global. Ele utiliza esse índice para transformar sua Hora Técnica Mínima em uma Hora Técnica
               Ajustada — um valor superior que remunera a dificuldade do trabalho. Essa taxa ajustada é a
-              base para calcular o valor do projeto que, somado às despesas variáveis, gera o Preço de
-              Venda Final.
+              base para calcular o valor do projeto que, somado às despesas variáveis e ajustado pelo
+              desconto aplicado, gera o Preço de Venda Final.
             </p>
 
             <div className="space-y-4">
@@ -425,6 +425,14 @@ export default function Manual() {
                       </p>
                     </div>
                   </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-calcularq-blue font-bold mt-1">●</span>
+                    <div>
+                      <strong>Desconto:</strong> Utilize a barra deslizante para aplicar uma porcentagem de desconto sobre
+                      os seus honorários. O sistema ajusta o preço do projeto e exibe o seu prejuízo (quanto dinheiro você está
+                      abrindo mão) para que você negocie consciente do impacto no seu bolso.
+                    </div>
+                  </li>
                 </ul>
               </div>
 
@@ -434,12 +442,16 @@ export default function Manual() {
                   Ao concluir, o sistema apresenta o resumo financeiro do projeto com essas informações:
                 </p>
                 <ul className="space-y-2 text-slate-700">
-                  <li>• Gráfico de contribuição das complexidades</li>
+                  <li>• Hora Técnica Mínima</li>
                   <li>• Índice de Complexidade Global</li>
                   <li>• Hora Técnica Ajustada: Quanto você está cobrando por hora neste projeto específico.</li>
-                  <li>• Estimativa de horas de projeto</li>
+                  <li>• Estimativa de Horas de Projeto</li>
                   <li>• Preço do Projeto: O valor referente apenas aos seus honorários.</li>
-                  <li>• Preço de Venda Final: O valor total da proposta (Honorários + Despesas Variáveis) para apresentar ao cliente.</li>
+                  <li>• Total de Despesas Variáveis: A soma de todos os custos extras repassados ao cliente.</li>
+                  <li>• Valor do Desconto: O valor subtraído dos seus honorários (caso tenha aplicado um desconto).</li>
+                  <li>• Preço de Venda Final: O valor total da proposta para apresentar ao cliente.</li>
+                  <li>• Lucro estimado: O valor projetado que restará após cobrir as suas despesas fixas durante o tempo
+                    estimado de projeto.</li>
                 </ul>
               </div>
             </div>

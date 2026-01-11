@@ -366,8 +366,8 @@ export default function Payment() {
           className="bg-white rounded-2xl shadow-xl border border-slate-200 p-8 lg:p-12"
         >
           <div className="text-center mb-8">
-            <div className="w-16 h-16 rounded-2xl bg-calcularq-blue/10 flex items-center justify-center mx-auto mb-4">
-              <img src="/favicon.png" alt="Calcularq" className="h-10 w-10 object-contain" />
+            <div className="w-16 h-16 rounded-2xl bg-calcularq-blue flex items-center justify-center mx-auto mb-4">
+              <img src="/Logomarca Branca Calcularq.png" alt="Calcularq" className="h-10 w-10 object-contain" />
             </div>
             <h1 className="text-3xl font-bold text-calcularq-blue mb-4">
               Acesso à Calcularq
@@ -388,7 +388,7 @@ export default function Payment() {
               </li>
               <li className="flex items-start gap-3">
                 <CheckCircle className="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" />
-                <span>Cálculos de preço ilimitados</span>
+                <span>Cálculos ilimitados de precificação</span>
               </li>
               <li className="flex items-start gap-3">
                 <CheckCircle className="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" />
@@ -431,7 +431,8 @@ export default function Payment() {
             <Button
               onClick={handleStripeCheckout}
               disabled={isProcessing || !acceptedTerms}
-              className="bg-calcularq-orange hover:bg-[#e69400] text-white px-8 py-6 text-lg font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
+              className="text-white px-8 py-6 text-lg font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
+              style={{ backgroundColor: '#fc7338' }}
             >
               {isProcessing ? (
                 <>

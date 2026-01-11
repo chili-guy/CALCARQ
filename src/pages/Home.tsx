@@ -101,15 +101,29 @@ export default function Home() {
                     Precifique seus projetos de arquitetura. A Calcularq é uma ferramenta precisa para alinhar seus cálculos à dedicação que cada projeto exige.
                   </p>
 
-                  {/* Rating Widget */}
-                  <div className="flex items-center justify-center gap-2 mb-6">
-                    <div className="flex gap-1">
-                      {[...Array(5)].map((_, i) => (
-                        <Star key={i} className={`w-5 h-5 ${i < 4 ? 'fill-amber-400 text-amber-400' : 'fill-white text-amber-400'}`} />
-                      ))}
-                    </div>
-                    <span className="text-sm font-semibold text-slate-700">4,7/5 (39)</span>
+                  {/* Senja.io Widget */}
+                  <div className="mb-6 flex items-center justify-center">
+                    <div 
+                      className="senja-embed" 
+                      data-id="GRdv6A"
+                      style={{ width: '100%', maxWidth: '600px' }}
+                    />
+                    <script async src="https://widget.senja.io/widget.js" />
                   </div>
+                  
+                  {/* Botão de avaliação para usuários pagos */}
+                  {user?.hasPaid && (
+                    <div className="mb-6 text-center">
+                      <a
+                        href="https://senja.io/p/calcularq/r/GRdv6A"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-[#fc7338] hover:underline font-medium"
+                      >
+                        Avalie a Calcularq
+                      </a>
+                    </div>
+                  )}
 
                   {/* CTA Button */}
                   <Link 
@@ -119,10 +133,17 @@ export default function Home() {
                   >
                     <Button 
                       size="lg" 
-                      className="w-full bg-calcularq-orange hover:bg-orange-600 text-white px-8 py-6 text-lg rounded-xl shadow-lg hover:shadow-xl transition-all font-semibold sm:text-lg text-base"
+                      className="w-full text-white px-8 py-6 text-lg rounded-xl shadow-lg hover:shadow-xl transition-all font-semibold sm:text-lg text-base"
+                      style={{ backgroundColor: '#fc7338' }}
                     >
-                      <span className="hidden sm:inline">Acesse agora por apenas R$19,90</span>
-                      <span className="sm:hidden">Apenas R$19,90</span>
+                      {user?.hasPaid ? (
+                        "Acessar a Calcularq"
+                      ) : (
+                        <>
+                          <span className="hidden sm:inline">Acesse agora por apenas R$19,90</span>
+                          <span className="sm:hidden">Apenas R$19,90</span>
+                        </>
+                      )}
                     </Button>
                   </Link>
 
@@ -223,9 +244,12 @@ export default function Home() {
             transition={{ delay: 0.6 }}
             className="text-center"
           >
-            <h2 className="text-3xl md:text-4xl font-bold text-calcularq-blue mb-12">
-              Como Funciona
+            <h2 className="text-3xl md:text-4xl font-bold text-calcularq-blue mb-4">
+              Ajustes Finais
             </h2>
+            <p className="text-lg text-slate-700 mb-12 max-w-3xl mx-auto">
+              Adicione despesas variáveis, aplique descontos estratégicos e visualize instantaneamente o preço de venda final do seu projeto.
+            </p>
 
             <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
               <FormulaStep 

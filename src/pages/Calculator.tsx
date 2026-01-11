@@ -153,7 +153,8 @@ export default function Calculator() {
             Calculadora de Precificação
           </h1>
           <p className="text-lg text-slate-600">
-            Configure os fatores de complexidade e parâmetros financeiros para calcular o valor do seu projeto
+            Insira suas despesas fixas, calibre os fatores de complexidade e adicione os custos
+            variáveis para chegar a um preço justo, que remunera corretamente a dificuldade do seu trabalho.
           </p>
         </motion.div>
 

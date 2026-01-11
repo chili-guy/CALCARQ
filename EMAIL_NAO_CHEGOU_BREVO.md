@@ -153,3 +153,4 @@ Para ver o que aconteceu com o email:
 **O importante é que o sender esteja verificado no Brevo!** ✅
 
 
+

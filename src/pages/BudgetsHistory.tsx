@@ -87,9 +87,6 @@ export default function BudgetsHistory() {
             <h3 className="text-xl font-semibold text-slate-700 mb-2">
               Nenhum cálculo salvo ainda
             </h3>
-            <p className="text-slate-500 mb-6">
-              Acesse aqui os cálculos que você salvou no sistema.
-            </p>
             <Link to={createPageUrl("Calculator")}>
               <Button className="bg-calcularq-blue hover:bg-[#002366] text-white">
                 <Plus className="w-4 h-4 mr-2" />
