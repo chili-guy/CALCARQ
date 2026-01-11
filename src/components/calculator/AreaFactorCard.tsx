@@ -68,7 +68,7 @@ export default function AreaFactorCard({
       {/* Input de Área */}
       <div className="mb-4">
         <label className="block text-sm font-medium text-slate-700 mb-2">
-          Área do Projeto (m²)
+          Área de Projeto (m²)
         </label>
         <input
           type="number"

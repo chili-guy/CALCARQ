@@ -249,6 +249,23 @@ export default function Calculator() {
                     />
                   ))}
                 </div>
+
+                {/* Resumo dos Níveis de Complexidade - Movido para o final da seção */}
+                <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                  <h3 className="font-semibold text-blue-900 mb-3">Níveis de Complexidade dos Fatores:</h3>
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+                    {Object.entries(selections).map(([factorId, level]) => {
+                      const factor = factors.find(f => f.id === factorId);
+                      const factorName = factor ? factor.name : factorId;
+                      return (
+                        <div key={factorId} className="text-sm">
+                          <span className="text-blue-700">{factorName}:</span>{" "}
+                          <span className="font-semibold text-blue-900">Nível {level}</span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
               </div>
             </motion.section>
           )}

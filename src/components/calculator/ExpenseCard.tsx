@@ -55,14 +55,14 @@ export default function ExpenseCard({
         {expenses.map((expense) => (
           <div
             key={expense.id}
-            className="flex items-center gap-2 p-3 bg-slate-50 rounded-lg border border-slate-200"
+            className="flex items-center gap-2 p-3 bg-slate-50 rounded-lg border border-slate-200 flex-wrap sm:flex-nowrap"
           >
             <input
               type="text"
               placeholder={placeholder}
               value={expense.name}
               onChange={(e) => onUpdate(expense.id, { name: e.target.value })}
-              className="flex-1 px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-calcularq-blue focus:border-calcularq-blue"
+              className="flex-1 px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-calcularq-blue focus:border-calcularq-blue min-w-0"
             />
             <div className="relative">
               <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 text-sm">
@@ -74,19 +74,21 @@ export default function ExpenseCard({
                 step="0.01"
                 value={expense.value || ""}
                 onChange={(e) => onUpdate(expense.id, { value: Number(e.target.value) })}
-                className="w-32 pl-8 pr-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-calcularq-blue focus:border-calcularq-blue"
+                className="w-28 sm:w-32 pl-8 pr-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-calcularq-blue focus:border-calcularq-blue min-w-0"
                 placeholder="0,00"
               />
             </div>
-            <Button
-              type="button"
-              variant="ghost"
-              size="icon"
-              onClick={() => onRemove(expense.id)}
-              className="text-red-500 hover:text-red-700 hover:bg-red-50"
-            >
-              <X className="w-4 h-4" />
-            </Button>
+            {expenses.length > 1 && (
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                onClick={() => onRemove(expense.id)}
+                className="text-red-500 hover:text-red-700 hover:bg-red-50"
+              >
+                <X className="w-4 h-4" />
+              </Button>
+            )}
           </div>
         ))}
       </div>
