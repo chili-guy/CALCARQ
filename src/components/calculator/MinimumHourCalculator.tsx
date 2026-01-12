@@ -56,9 +56,11 @@ export default function MinimumHourCalculator({
   useEffect(() => {
     if (!useManual && calculatedMinHourRate > 0) {
       handleCalculate();
+    } else if (useManual && manualMinHourRate !== undefined && manualMinHourRate > 0) {
+      handleCalculate();
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [calculatedMinHourRate, useManual]);
+  }, [calculatedMinHourRate, useManual, manualMinHourRate]);
 
   // Garantir que sempre haja pelo menos um card de despesa fixa
   useEffect(() => {

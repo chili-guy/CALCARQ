@@ -124,3 +124,4 @@ Você deve ver logs no Terminal 1 (Backend) e Terminal 2 (Stripe CLI).
 
 
 
+

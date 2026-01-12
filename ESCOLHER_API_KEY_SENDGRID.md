@@ -112,3 +112,4 @@ R: Sim! A API Key "TESTE" que você criou funciona perfeitamente para SMTP.
 
 
 
+

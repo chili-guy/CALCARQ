@@ -302,7 +302,7 @@ export default function Calculator() {
           {(!minHourlyRate || minHourlyRate <= 0) && (
             <div className="text-center py-12">
               <p className="text-slate-500">
-                Comece preenchendo a Calculadora da Hora Técnica Mínima acima para continuar.
+                Preencha os dados acima para continuar.
               </p>
             </div>
           )}
