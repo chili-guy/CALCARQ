@@ -450,7 +450,7 @@ export default function Manual() {
                   <li>• Total de Despesas Variáveis: A soma de todos os custos extras repassados ao cliente.</li>
                   <li>• Valor do Desconto: O valor subtraído dos seus honorários (caso tenha aplicado um desconto).</li>
                   <li>• Preço de Venda Final: O valor total da proposta para apresentar ao cliente.</li>
-                  <li>• Lucro estimado: O valor projetado que restará após cobrir as suas despesas fixas durante o tempo
+                  <li>• Lucro Estimado: O valor projetado que restará após cobrir as suas despesas fixas durante o tempo
                     estimado de projeto.</li>
                 </ul>
               </div>

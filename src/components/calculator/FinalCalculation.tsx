@@ -1,4 +1,4 @@
-import { Calculator, DollarSign, Clock, TrendingUp } from "lucide-react";
+import { DollarSign } from "lucide-react";
 import { useEffect } from "react";
 import ExpenseCard, { Expense } from "./ExpenseCard";
 import SaveBudgetButton from "./SaveBudgetButton";
@@ -157,57 +157,12 @@ export default function FinalCalculation({
         <div className="mt-6 pt-6 border-t-2 border-calcularq-blue/30 bg-white rounded-xl p-6">
           <h3 className="text-xl font-bold text-calcularq-blue mb-6">Resultados do Cálculo</h3>
           
-          <div className="space-y-4">
-            {/* Resumo dos Cálculos */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="p-4 bg-slate-50 rounded-lg">
-                <div className="flex items-center gap-2 mb-2">
-                  <Clock className="w-4 h-4 text-slate-500" />
-                  <span className="text-sm text-slate-600">Hora Técnica Mínima</span>
-                </div>
-                <p className="text-xl font-bold text-calcularq-blue">
-                  R$ {minHourlyRate.toLocaleString("pt-BR", { 
-                    minimumFractionDigits: 2, 
-                    maximumFractionDigits: 2 
-                  })}
-                </p>
-              </div>
-
-              <div className="p-4 bg-slate-50 rounded-lg">
-                <div className="flex items-center gap-2 mb-2">
-                  <TrendingUp className="w-4 h-4 text-slate-500" />
-                  <span className="text-sm text-slate-600">Índice de Complexidade Global</span>
-                </div>
-                <p className="text-xl font-bold text-calcularq-blue">{globalComplexity}</p>
-              </div>
-
-              <div className="p-4 bg-slate-50 rounded-lg">
-                <div className="flex items-center gap-2 mb-2">
-                  <Calculator className="w-4 h-4 text-slate-500" />
-                  <span className="text-sm text-slate-600">Hora Técnica Ajustada</span>
-                </div>
-                <p className="text-xl font-bold text-calcularq-blue">
-                  R$ {adjustedHourlyRate.toLocaleString("pt-BR", { 
-                    minimumFractionDigits: 2, 
-                    maximumFractionDigits: 2 
-                  })}
-                </p>
-              </div>
-
-              <div className="p-4 bg-slate-50 rounded-lg">
-                <div className="flex items-center gap-2 mb-2">
-                  <Clock className="w-4 h-4 text-slate-500" />
-                  <span className="text-sm text-slate-600">Estimativa de Horas de Projeto</span>
-                </div>
-                <p className="text-xl font-bold text-calcularq-blue">{estimatedHours}h</p>
-              </div>
-            </div>
-
-            {/* Preço de Projeto */}
-            <div className="p-6 bg-calcularq-blue/10 rounded-lg border border-calcularq-blue/20">
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-lg font-semibold text-calcularq-blue">Preço do Projeto:</span>
-                <span className="text-2xl font-bold text-calcularq-blue">
+          <div className="space-y-3">
+            {/* Preço do Projeto */}
+            <div className="p-4 bg-calcularq-blue/10 rounded-lg border border-calcularq-blue/20">
+              <div className="flex items-center justify-between">
+                <span className="text-sm font-semibold text-calcularq-blue">Preço do Projeto:</span>
+                <span className="text-lg font-bold text-calcularq-blue">
                   R$ {projectPrice.toLocaleString("pt-BR", { 
                     minimumFractionDigits: 2, 
                     maximumFractionDigits: 2 
@@ -218,9 +173,9 @@ export default function FinalCalculation({
 
             {/* Total de Despesas Variáveis */}
             {totalVariableExpenses > 0 && (
-              <div className="p-4 bg-slate-50 rounded-lg">
+              <div className="p-4 bg-calcularq-blue/10 rounded-lg border border-calcularq-blue/20">
                 <div className="flex items-center justify-between">
-                  <span className="text-sm font-semibold text-slate-700">Total de Despesas Variáveis:</span>
+                  <span className="text-sm font-semibold text-calcularq-blue">Total de Despesas Variáveis:</span>
                   <span className="text-lg font-bold text-calcularq-blue">
                     R$ {totalVariableExpenses.toLocaleString("pt-BR", { 
                       minimumFractionDigits: 2, 
@@ -233,10 +188,10 @@ export default function FinalCalculation({
 
             {/* Valor do Desconto */}
             {discountAmount > 0 && (
-              <div className="p-4 bg-amber-50 rounded-lg border border-amber-200">
+              <div className="p-4 bg-calcularq-blue/10 rounded-lg border border-calcularq-blue/20">
                 <div className="flex items-center justify-between">
-                  <span className="text-sm font-semibold text-amber-800">Valor do Desconto:</span>
-                  <span className="text-lg font-bold text-amber-800">
+                  <span className="text-sm font-semibold text-calcularq-blue">Valor do Desconto:</span>
+                  <span className="text-lg font-bold text-calcularq-blue">
                     R$ {discountAmount.toLocaleString("pt-BR", { 
                       minimumFractionDigits: 2, 
                       maximumFractionDigits: 2 
@@ -247,10 +202,10 @@ export default function FinalCalculation({
             )}
 
             {/* Preço de Venda Final */}
-            <div className="p-6 bg-calcularq-orange/10 rounded-lg border-2 border-calcularq-orange">
+            <div className="p-4 bg-calcularq-blue/10 rounded-lg border border-calcularq-blue/20">
               <div className="flex items-center justify-between">
-                <span className="text-xl font-bold text-calcularq-orange">Preço de Venda Final:</span>
-                <span className="text-3xl font-bold text-calcularq-orange">
+                <span className="text-sm font-semibold text-calcularq-blue">Preço de Venda Final:</span>
+                <span className="text-lg font-bold text-calcularq-blue">
                   R$ {finalSalePriceWithDiscount.toLocaleString("pt-BR", { 
                     minimumFractionDigits: 2, 
                     maximumFractionDigits: 2 
@@ -259,12 +214,12 @@ export default function FinalCalculation({
               </div>
             </div>
 
-            {/* Lucro estimado */}
+            {/* Lucro Estimado */}
             {profit !== null && (
-              <div className="p-6 bg-green-50 rounded-lg border border-green-200">
+              <div className="p-4 bg-calcularq-blue/10 rounded-lg border border-calcularq-blue/20">
                 <div className="flex items-center justify-between">
-                  <span className="text-lg font-semibold text-green-700">Lucro estimado:</span>
-                  <span className={`text-2xl font-bold ${profit >= 0 ? 'text-green-700' : 'text-red-600'}`}>
+                  <span className="text-sm font-semibold text-calcularq-blue">Lucro Estimado:</span>
+                  <span className="text-lg font-bold text-calcularq-blue">
                     R$ {profit.toLocaleString("pt-BR", { 
                       minimumFractionDigits: 2, 
                       maximumFractionDigits: 2 
