@@ -111,3 +111,4 @@ Vou modificar o código para usar a API REST do Brevo ao invés de SMTP. Isso re
 
 
 
+

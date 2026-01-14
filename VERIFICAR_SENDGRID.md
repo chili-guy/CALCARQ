@@ -167,3 +167,4 @@ R: Sim, nos primeiros envios é comum. Conforme você envia mais, a reputação 
 
 
 
+

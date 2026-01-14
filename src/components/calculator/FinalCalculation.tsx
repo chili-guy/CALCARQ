@@ -122,32 +122,32 @@ export default function FinalCalculation({
           />
 
           {/* Desconto Comercial */}
-          <div className="p-6 bg-amber-50 rounded-lg border border-amber-200">
-            <div className="mb-4">
-              <label className="block text-sm font-medium text-slate-700 mb-3">
-                Desconto Comercial: {commercialDiscount}%
-              </label>
-              <input
-                type="range"
-                min="0"
-                max="100"
-                step="1"
-                value={commercialDiscount}
-                onChange={(e) => onCommercialDiscountChange(Number(e.target.value))}
-                className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-calcularq-orange"
-              />
-              <div className="flex justify-between text-xs text-slate-500 mt-1">
-                <span>0%</span>
-                <span>100%</span>
-              </div>
+          <div>
+            <label className="block text-sm font-medium text-slate-700 mb-2">
+              Desconto Comercial: {commercialDiscount}%
+            </label>
+            <input
+              type="range"
+              min="0"
+              max="100"
+              step="1"
+              value={commercialDiscount}
+              onChange={(e) => onCommercialDiscountChange(Number(e.target.value))}
+              className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-calcularq-blue mb-2"
+            />
+            <div className="flex justify-between text-xs text-slate-500 mb-2">
+              <span>0%</span>
+              <span>100%</span>
             </div>
             {commercialDiscount > 0 && (
-              <p className="mt-3 text-sm text-slate-700">
-                Ao aplicar este desconto, você reduz sua remuneração em R$ {discountAmount.toLocaleString("pt-BR", { 
-                  minimumFractionDigits: 2, 
-                  maximumFractionDigits: 2 
-                })}.
-              </p>
+              <div className="mt-3 p-4 bg-amber-50 rounded-lg border border-amber-200">
+                <p className="text-sm text-slate-700">
+                  Ao aplicar este desconto, você reduz sua remuneração em R$ {discountAmount.toLocaleString("pt-BR", { 
+                    minimumFractionDigits: 2, 
+                    maximumFractionDigits: 2 
+                  })}.
+                </p>
+              </div>
             )}
           </div>
 
