@@ -103,7 +103,7 @@ export default function Layout({ children }: LayoutProps) {
                       <span className="hidden sm:inline">Manual</span>
                     </Link>
                   )}
-                  <div className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium text-slate-600">
+                  <div className="hidden md:flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium text-slate-600">
                     <User className="w-4 h-4" />
                     <span className="hidden sm:inline">{user.name}</span>
                   </div>
