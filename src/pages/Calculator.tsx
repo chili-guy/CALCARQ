@@ -137,16 +137,35 @@ export default function Calculator() {
     );
   }, [minHourlyRate, estimatedHours, globalComplexity, variableExpenses]);
 
-  // Calcular valores para o card de resultados
+  // Calcular valores intermediários para exibição progressiva
   const totalVariableExpensesForDisplay = variableExpenses.reduce((sum, exp) => sum + exp.value, 0);
-  const projectPriceWithDiscount = results ? results.projectPrice * (1 - commercialDiscount / 100) : 0;
-  const discountAmount = results ? results.projectPrice * (commercialDiscount / 100) : 0;
+  
+  // Calcular hora técnica ajustada mesmo sem horas estimadas
+  const adjustedHourlyRateIntermediate = minHourlyRate && minHourlyRate > 0 && globalComplexity > 0
+    ? minHourlyRate * globalComplexity
+    : 0;
+  
+  // Calcular preço do projeto mesmo sem todas as condições
+  const projectPriceIntermediate = adjustedHourlyRateIntermediate > 0 && estimatedHours > 0
+    ? adjustedHourlyRateIntermediate * estimatedHours
+    : 0;
+  
+  const projectPriceWithDiscount = projectPriceIntermediate > 0
+    ? projectPriceIntermediate * (1 - commercialDiscount / 100)
+    : 0;
+  const discountAmount = projectPriceIntermediate > 0
+    ? projectPriceIntermediate * (commercialDiscount / 100)
+    : 0;
   const finalSalePriceWithDiscount = projectPriceWithDiscount + totalVariableExpensesForDisplay;
+  
   const totalFixedExpenses = fixedExpenses.reduce((sum, exp) => sum + exp.value, 0);
   const fixedCostPerHour = productiveHours > 0 ? totalFixedExpenses / productiveHours : 0;
-  const profit = productiveHours > 0 && results
+  const profit = productiveHours > 0 && projectPriceWithDiscount > 0 && estimatedHours > 0
     ? projectPriceWithDiscount - (fixedCostPerHour * estimatedHours)
     : null;
+  
+  // Verificar se há seleções de complexidade
+  const hasComplexitySelections = Object.keys(selections).length > 0;
 
   const areaFactor = factors.find(f => f.id === "area");
   const otherFactors = factors.filter(f => f.id !== "area");
@@ -327,52 +346,104 @@ export default function Calculator() {
               <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm">
                 <h3 className="text-xl font-bold text-calcularq-blue mb-6">Resultados do Cálculo</h3>
                 
-                {results ? (
-                  <div className="space-y-3">
-                    {/* Preço do Projeto */}
+                <div className="space-y-3">
+                  {/* Hora Técnica Mínima */}
+                  {minHourlyRate && minHourlyRate > 0 ? (
+                    <div className="p-4 bg-calcularq-blue/10 rounded-lg border border-calcularq-blue/20">
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm font-semibold text-calcularq-blue">Hora Técnica Mínima:</span>
+                        <span className="text-lg font-bold text-calcularq-blue">
+                          R$ {minHourlyRate.toLocaleString("pt-BR", { 
+                            minimumFractionDigits: 2, 
+                            maximumFractionDigits: 2 
+                          })}/h
+                        </span>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="text-center py-4">
+                      <p className="text-slate-400 text-xs">Preencha a Hora Técnica Mínima</p>
+                    </div>
+                  )}
+
+                  {/* Complexidade Global */}
+                  {hasComplexitySelections ? (
+                    <div className="p-4 bg-calcularq-blue/10 rounded-lg border border-calcularq-blue/20">
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm font-semibold text-calcularq-blue">Complexidade Global:</span>
+                        <span className="text-lg font-bold text-calcularq-blue">
+                          {globalComplexity.toFixed(2)}
+                        </span>
+                      </div>
+                    </div>
+                  ) : minHourlyRate && minHourlyRate > 0 ? (
+                    <div className="text-center py-2">
+                      <p className="text-slate-400 text-xs">Configure a complexidade</p>
+                    </div>
+                  ) : null}
+
+                  {/* Hora Técnica Ajustada */}
+                  {adjustedHourlyRateIntermediate > 0 ? (
+                    <div className="p-4 bg-calcularq-blue/10 rounded-lg border border-calcularq-blue/20">
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm font-semibold text-calcularq-blue">Hora Técnica Ajustada:</span>
+                        <span className="text-lg font-bold text-calcularq-blue">
+                          R$ {adjustedHourlyRateIntermediate.toLocaleString("pt-BR", { 
+                            minimumFractionDigits: 2, 
+                            maximumFractionDigits: 2 
+                          })}/h
+                        </span>
+                      </div>
+                    </div>
+                  ) : null}
+
+                  {/* Preço do Projeto */}
+                  {projectPriceIntermediate > 0 ? (
                     <div className="p-4 bg-calcularq-blue/10 rounded-lg border border-calcularq-blue/20">
                       <div className="flex items-center justify-between">
                         <span className="text-sm font-semibold text-calcularq-blue">Preço do Projeto:</span>
                         <span className="text-lg font-bold text-calcularq-blue">
-                          R$ {results.projectPrice.toLocaleString("pt-BR", { 
+                          R$ {projectPriceIntermediate.toLocaleString("pt-BR", { 
                             minimumFractionDigits: 2, 
                             maximumFractionDigits: 2 
                           })}
                         </span>
                       </div>
                     </div>
+                  ) : null}
 
-                    {/* Total de Despesas Variáveis */}
-                    {totalVariableExpensesForDisplay > 0 && (
-                      <div className="p-4 bg-calcularq-blue/10 rounded-lg border border-calcularq-blue/20">
-                        <div className="flex items-center justify-between">
-                          <span className="text-sm font-semibold text-calcularq-blue">Total de Despesas Variáveis:</span>
-                          <span className="text-lg font-bold text-calcularq-blue">
-                            R$ {totalVariableExpensesForDisplay.toLocaleString("pt-BR", { 
-                              minimumFractionDigits: 2, 
-                              maximumFractionDigits: 2 
-                            })}
-                          </span>
-                        </div>
+                  {/* Total de Despesas Variáveis */}
+                  {totalVariableExpensesForDisplay > 0 && (
+                    <div className="p-4 bg-calcularq-blue/10 rounded-lg border border-calcularq-blue/20">
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm font-semibold text-calcularq-blue">Total de Despesas Variáveis:</span>
+                        <span className="text-lg font-bold text-calcularq-blue">
+                          R$ {totalVariableExpensesForDisplay.toLocaleString("pt-BR", { 
+                            minimumFractionDigits: 2, 
+                            maximumFractionDigits: 2 
+                          })}
+                        </span>
                       </div>
-                    )}
+                    </div>
+                  )}
 
-                    {/* Valor do Desconto */}
-                    {discountAmount > 0 && (
-                      <div className="p-4 bg-calcularq-blue/10 rounded-lg border border-calcularq-blue/20">
-                        <div className="flex items-center justify-between">
-                          <span className="text-sm font-semibold text-calcularq-blue">Valor do Desconto:</span>
-                          <span className="text-lg font-bold text-calcularq-blue">
-                            R$ {discountAmount.toLocaleString("pt-BR", { 
-                              minimumFractionDigits: 2, 
-                              maximumFractionDigits: 2 
-                            })}
-                          </span>
-                        </div>
+                  {/* Valor do Desconto */}
+                  {discountAmount > 0 && (
+                    <div className="p-4 bg-calcularq-blue/10 rounded-lg border border-calcularq-blue/20">
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm font-semibold text-calcularq-blue">Valor do Desconto:</span>
+                        <span className="text-lg font-bold text-calcularq-blue">
+                          R$ {discountAmount.toLocaleString("pt-BR", { 
+                            minimumFractionDigits: 2, 
+                            maximumFractionDigits: 2 
+                          })}
+                        </span>
                       </div>
-                    )}
+                    </div>
+                  )}
 
-                    {/* Preço de Venda Final */}
+                  {/* Preço de Venda Final */}
+                  {finalSalePriceWithDiscount > 0 ? (
                     <div className="p-4 bg-calcularq-blue/10 rounded-lg border border-calcularq-blue/20">
                       <div className="flex items-center justify-between">
                         <span className="text-sm font-semibold text-calcularq-blue">Preço de Venda Final:</span>
@@ -384,29 +455,30 @@ export default function Calculator() {
                         </span>
                       </div>
                     </div>
+                  ) : null}
 
-                    {/* Lucro Estimado */}
-                    {profit !== null && (
-                      <div className="p-4 bg-calcularq-blue/10 rounded-lg border border-calcularq-blue/20">
-                        <div className="flex items-center justify-between">
-                          <span className="text-sm font-semibold text-calcularq-blue">Lucro Estimado:</span>
-                          <span className="text-lg font-bold text-calcularq-blue">
-                            R$ {profit.toLocaleString("pt-BR", { 
-                              minimumFractionDigits: 2, 
-                              maximumFractionDigits: 2 
-                            })}
-                          </span>
-                        </div>
+                  {/* Lucro Estimado */}
+                  {profit !== null && (
+                    <div className="p-4 bg-calcularq-blue/10 rounded-lg border border-calcularq-blue/20">
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm font-semibold text-calcularq-blue">Lucro Estimado:</span>
+                        <span className="text-lg font-bold text-calcularq-blue">
+                          R$ {profit.toLocaleString("pt-BR", { 
+                            minimumFractionDigits: 2, 
+                            maximumFractionDigits: 2 
+                          })}
+                        </span>
                       </div>
-                    )}
-                  </div>
-                ) : (
-                  <div className="text-center py-8">
-                    <p className="text-slate-500 text-sm">
-                      Preencha os campos para ver o resultado
-                    </p>
-                  </div>
-                )}
+                    </div>
+                  )}
+
+                  {/* Mensagem quando não há dados */}
+                  {!minHourlyRate || minHourlyRate <= 0 ? (
+                    <div className="text-center py-4">
+                      <p className="text-slate-400 text-xs">Preencha os campos para ver os resultados</p>
+                    </div>
+                  ) : null}
+                </div>
               </div>
             </div>
           </div>
