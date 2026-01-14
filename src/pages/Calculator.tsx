@@ -137,6 +137,17 @@ export default function Calculator() {
     );
   }, [minHourlyRate, estimatedHours, globalComplexity, variableExpenses]);
 
+  // Calcular valores para o card de resultados
+  const totalVariableExpensesForDisplay = variableExpenses.reduce((sum, exp) => sum + exp.value, 0);
+  const projectPriceWithDiscount = results ? results.projectPrice * (1 - commercialDiscount / 100) : 0;
+  const discountAmount = results ? results.projectPrice * (commercialDiscount / 100) : 0;
+  const finalSalePriceWithDiscount = projectPriceWithDiscount + totalVariableExpensesForDisplay;
+  const totalFixedExpenses = fixedExpenses.reduce((sum, exp) => sum + exp.value, 0);
+  const fixedCostPerHour = productiveHours > 0 ? totalFixedExpenses / productiveHours : 0;
+  const profit = productiveHours > 0 && results
+    ? projectPriceWithDiscount - (fixedCostPerHour * estimatedHours)
+    : null;
+
   const areaFactor = factors.find(f => f.id === "area");
   const otherFactors = factors.filter(f => f.id !== "area");
 
@@ -158,7 +169,9 @@ export default function Calculator() {
           </p>
         </motion.div>
 
-        <div className="space-y-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Coluna Principal: Conteúdo */}
+          <div className="lg:col-span-2 space-y-8">
           {/* Seção 1: Calculadora da Hora Técnica Mínima */}
           <motion.section
             initial={{ opacity: 0, y: 20 }}
@@ -306,6 +319,97 @@ export default function Calculator() {
               </p>
             </div>
           )}
+          </div>
+
+          {/* Coluna Lateral: Resultados Fixos */}
+          <div className="lg:col-span-1">
+            <div className="lg:sticky lg:top-24">
+              <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm">
+                <h3 className="text-xl font-bold text-calcularq-blue mb-6">Resultados do Cálculo</h3>
+                
+                {results ? (
+                  <div className="space-y-3">
+                    {/* Preço do Projeto */}
+                    <div className="p-4 bg-calcularq-blue/10 rounded-lg border border-calcularq-blue/20">
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm font-semibold text-calcularq-blue">Preço do Projeto:</span>
+                        <span className="text-lg font-bold text-calcularq-blue">
+                          R$ {results.projectPrice.toLocaleString("pt-BR", { 
+                            minimumFractionDigits: 2, 
+                            maximumFractionDigits: 2 
+                          })}
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Total de Despesas Variáveis */}
+                    {totalVariableExpensesForDisplay > 0 && (
+                      <div className="p-4 bg-calcularq-blue/10 rounded-lg border border-calcularq-blue/20">
+                        <div className="flex items-center justify-between">
+                          <span className="text-sm font-semibold text-calcularq-blue">Total de Despesas Variáveis:</span>
+                          <span className="text-lg font-bold text-calcularq-blue">
+                            R$ {totalVariableExpensesForDisplay.toLocaleString("pt-BR", { 
+                              minimumFractionDigits: 2, 
+                              maximumFractionDigits: 2 
+                            })}
+                          </span>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Valor do Desconto */}
+                    {discountAmount > 0 && (
+                      <div className="p-4 bg-calcularq-blue/10 rounded-lg border border-calcularq-blue/20">
+                        <div className="flex items-center justify-between">
+                          <span className="text-sm font-semibold text-calcularq-blue">Valor do Desconto:</span>
+                          <span className="text-lg font-bold text-calcularq-blue">
+                            R$ {discountAmount.toLocaleString("pt-BR", { 
+                              minimumFractionDigits: 2, 
+                              maximumFractionDigits: 2 
+                            })}
+                          </span>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Preço de Venda Final */}
+                    <div className="p-4 bg-calcularq-blue/10 rounded-lg border border-calcularq-blue/20">
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm font-semibold text-calcularq-blue">Preço de Venda Final:</span>
+                        <span className="text-lg font-bold text-calcularq-blue">
+                          R$ {finalSalePriceWithDiscount.toLocaleString("pt-BR", { 
+                            minimumFractionDigits: 2, 
+                            maximumFractionDigits: 2 
+                          })}
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Lucro Estimado */}
+                    {profit !== null && (
+                      <div className="p-4 bg-calcularq-blue/10 rounded-lg border border-calcularq-blue/20">
+                        <div className="flex items-center justify-between">
+                          <span className="text-sm font-semibold text-calcularq-blue">Lucro Estimado:</span>
+                          <span className="text-lg font-bold text-calcularq-blue">
+                            R$ {profit.toLocaleString("pt-BR", { 
+                              minimumFractionDigits: 2, 
+                              maximumFractionDigits: 2 
+                            })}
+                          </span>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <div className="text-center py-8">
+                    <p className="text-slate-500 text-sm">
+                      Preencha os campos para ver o resultado
+                    </p>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>

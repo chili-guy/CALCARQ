@@ -62,23 +62,11 @@ export default function FinalCalculation({
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Calcular valores com desconto
-  const projectPriceWithDiscount = projectPrice * (1 - commercialDiscount / 100);
+  // Calcular valor do desconto para exibição
   const discountAmount = projectPrice * (commercialDiscount / 100);
-  const totalVariableExpenses = variableExpenses.reduce((sum, exp) => sum + exp.value, 0);
-  const finalSalePriceWithDiscount = projectPriceWithDiscount + totalVariableExpenses;
-
-  // Calcular lucro (só se não usar hora manual)
-  const totalFixedExpenses = fixedExpenses.reduce((sum, exp) => sum + exp.value, 0);
-  const fixedCostPerHour = productiveHours > 0 ? totalFixedExpenses / productiveHours : 0;
-  const profit = productiveHours > 0 
-    ? projectPriceWithDiscount - (fixedCostPerHour * estimatedHours)
-    : null;
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-      {/* Coluna Esquerda: Formulário */}
-      <div className="lg:col-span-2">
+    <div>
         <div className="bg-white rounded-2xl border border-slate-200 p-6 lg:p-8 shadow-sm">
           {/* Parte Superior: Composição Final do Preço */}
           <div className="border-2 border-calcularq-blue/20 rounded-2xl p-6 lg:p-8 bg-gradient-to-br from-calcularq-blue/5 to-white">
@@ -193,89 +181,6 @@ export default function FinalCalculation({
             </a>
           </div>
         </div>
-      </div>
-
-      {/* Coluna Direita: Resultados Fixos */}
-      <div className="lg:col-span-1">
-        <div className="lg:sticky lg:top-24">
-          <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm">
-            <h3 className="text-xl font-bold text-calcularq-blue mb-6">Resultados do Cálculo</h3>
-            
-            <div className="space-y-3">
-              {/* Preço do Projeto */}
-              <div className="p-4 bg-calcularq-blue/10 rounded-lg border border-calcularq-blue/20">
-                <div className="flex items-center justify-between">
-                  <span className="text-sm font-semibold text-calcularq-blue">Preço do Projeto:</span>
-                  <span className="text-lg font-bold text-calcularq-blue">
-                    R$ {projectPrice.toLocaleString("pt-BR", { 
-                      minimumFractionDigits: 2, 
-                      maximumFractionDigits: 2 
-                    })}
-                  </span>
-                </div>
-              </div>
-
-              {/* Total de Despesas Variáveis */}
-              {totalVariableExpenses > 0 && (
-                <div className="p-4 bg-calcularq-blue/10 rounded-lg border border-calcularq-blue/20">
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm font-semibold text-calcularq-blue">Total de Despesas Variáveis:</span>
-                    <span className="text-lg font-bold text-calcularq-blue">
-                      R$ {totalVariableExpenses.toLocaleString("pt-BR", { 
-                        minimumFractionDigits: 2, 
-                        maximumFractionDigits: 2 
-                      })}
-                    </span>
-                  </div>
-                </div>
-              )}
-
-              {/* Valor do Desconto */}
-              {discountAmount > 0 && (
-                <div className="p-4 bg-calcularq-blue/10 rounded-lg border border-calcularq-blue/20">
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm font-semibold text-calcularq-blue">Valor do Desconto:</span>
-                    <span className="text-lg font-bold text-calcularq-blue">
-                      R$ {discountAmount.toLocaleString("pt-BR", { 
-                        minimumFractionDigits: 2, 
-                        maximumFractionDigits: 2 
-                      })}
-                    </span>
-                  </div>
-                </div>
-              )}
-
-              {/* Preço de Venda Final */}
-              <div className="p-4 bg-calcularq-blue/10 rounded-lg border border-calcularq-blue/20">
-                <div className="flex items-center justify-between">
-                  <span className="text-sm font-semibold text-calcularq-blue">Preço de Venda Final:</span>
-                  <span className="text-lg font-bold text-calcularq-blue">
-                    R$ {finalSalePriceWithDiscount.toLocaleString("pt-BR", { 
-                      minimumFractionDigits: 2, 
-                      maximumFractionDigits: 2 
-                    })}
-                  </span>
-                </div>
-              </div>
-
-              {/* Lucro Estimado */}
-              {profit !== null && (
-                <div className="p-4 bg-calcularq-blue/10 rounded-lg border border-calcularq-blue/20">
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm font-semibold text-calcularq-blue">Lucro Estimado:</span>
-                    <span className="text-lg font-bold text-calcularq-blue">
-                      R$ {profit.toLocaleString("pt-BR", { 
-                        minimumFractionDigits: 2, 
-                        maximumFractionDigits: 2 
-                      })}
-                    </span>
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-      </div>
     </div>
   );
 }
