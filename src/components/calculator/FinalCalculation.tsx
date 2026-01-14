@@ -264,7 +264,7 @@ export default function FinalCalculation({
           href="https://senja.io/p/calcularq/r/GRdv6A"
           target="_blank"
           rel="noopener noreferrer"
-          className="block text-center text-[#fc7338] hover:underline font-medium text-sm"
+          className="block text-center text-[#fc7338] underline font-medium text-sm"
         >
           Avalie a Calcularq e ganhe um cupom de 25% para um colega
         </a>
